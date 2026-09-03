@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İslami Tabu - Ayetin Vakti</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-color: #00bcd4;
+            --accent-hover: #00acc1;
+            --danger-color: #ef4444;
+            --success-color: #22c55e;
+            --forbidden-color: #f43f5e;
+            --drawer-bg: #162032;
+        }
+
+        body.light-mode {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --accent-color: #00838f;
+            --drawer-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overscroll-behavior: contain;
+        }
+
+        /* Üst Bar (Menü ve Tema Butonu) */
+        .top-bar {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .icon-btn {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Sol Menü (Drawer) Stilleri */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100%;
+            background: var(--drawer-bg);
+            z-index: 101;
+            box-shadow: 5px 0 25px rgba(0,0,0,0.3);
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drawer.active {
+            left: 0;
+        }
+
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .drawer-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--accent-color);
+        }
+
+        .drawer-close {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .drawer-links {
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            overflow-y: auto;
+            flex: 1;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            gap: 4px;
+        }
+
+        .drawer-category-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #94a3b8;
+            padding: 12px 12px 6px 12px;
+            margin-top: 4px;
+        }
+
+        .drawer-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .drawer-item:hover {
+            background: rgba(0, 188, 212, 0.08);
+        }
+
+        .drawer-icon-box {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(0, 188, 212, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .drawer-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.05);
+            margin: 12px 0;
+        }
+
+        /* Oyun Konteynerı */
+        .game-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 50px;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .timer-box {
+            background: rgba(0, 188, 212, 0.1);
+            color: var(--accent-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .score-box {
+            font-size: 16px;
+        }
+
+        /* Tabu Kartı Tasarımı */
+        .tabu-card {
+            background: #ffffff;
+            color: #0f172a;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            text-align: left;
+        }
+
+        .target-word {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0f172a;
+            text-align: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .forbidden-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--forbidden-color);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .forbidden-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .forbidden-list li {
+            font-size: 18px;
+            font-weight: 600;
+            color: #334155;
+            background: #f1f5f9;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        /* Butonlar */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            padding: 12px 8px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            color: white;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-pass { background: #f59e0b; }
+        .btn-correct { background: var(--success-color); }
+        .btn-tabu { background: var(--forbidden-color); }
+
+        .btn-start {
+            width: 100%;
+            background: var(--accent-color);
+            color: #0f172a;
+            padding: 16px;
+            font-size: 18px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        .home-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .home-desc {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .game-over-score {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--accent-color);
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Üst Kontrol Barı -->
+    <div class="top-bar">
+        <button class="icon-btn" onclick="toggleDrawer()">☰</button>
+        <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()">🌙</button>
+    </div>
+
+    <!-- Sol Menü (Drawer) Overlay & İçerik -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
+    <div class="drawer" id="appDrawer">
+        <div class="drawer-header">
+            <div class="drawer-title">Ayetin Vakti</div>
+            <button class="drawer-close" onclick="toggleDrawer()">✕</button>
+        </div>
+        <div class="drawer-links">
+            <div class="drawer-category-title">İbadet & Vakitler</div>
+            <a href="https://ayetinvakti.github.io/Namaz-vakitleri/" class="drawer-item"><div class="drawer-icon-box">🕌</div><span data-i18n="menu_prayer">Namaz Vakitleri</span></a>
+            <a href="https://ayetinvakti.github.io/kaza-namazi/" class="drawer-item"><div class="drawer-icon-box">⏳</div><span data-i18n="menu_kaza">Kaza Namazı</span></a>
+            <a href="https://ayetinvakti.github.io/5-5-namaz/" class="drawer-item"><div class="drawer-icon-box">🤲🏻</div><span>5-5 Namaz</span></a>
+            <a href="https://ayetinvakti.github.io/Ramazan-ozel-imsakiye/" class="drawer-item"><div class="drawer-icon-box">🌙</div><span>Ramazan İmsakiyesi</span></a>
+            <a href="https://ayetinvakti.github.io/kible-pusulasi/" class="drawer-item"><div class="drawer-icon-box">🧭</div><span data-i18n="menu_qibla">Kıble Pusulası</span></a>
+            <a href="https://ayetinvakti.github.io/Yakindaki-Camiler/" class="drawer-item"><div class="drawer-icon-box">🕌</div><span>Yakındaki Camiler</span></a>
+            <a href="https://ayetinvakti.github.io/zekat-hesaplama/" class="drawer-item"><div class="drawer-icon-box">💰</div><span data-i18n="menu_zekat">Zekat Hesaplama</span></a>
+            <a href="https://ayetinvakti.github.io/Zikirmatik/" class="drawer-item"><div class="drawer-icon-box">📿</div><span data-i18n="menu_dhikr">Zikirmatik</span></a>
+
+            <div class="drawer-divider"></div>
+
+            <div class="drawer-category-title">Okuma & Öğrenme</div>
+            <a href="https://ayetinvakti.github.io/kuran-oku/" class="drawer-item"><div class="drawer-icon-box">📖</div><span data-i18n="menu_quran">Kur'an-ı Kerim Oku</span></a>
+            <a href="https://ayetinvakti.github.io/gunun-ayeti/" class="drawer-item"><div class="drawer-icon-box">✨</div><span data-i18n="menu_verse">Günün Ayeti</span></a>
+            <a href="esma.html" class="drawer-item"><div class="drawer-icon-box">🌙</div><span data-i18n="menu_esma">Esmaül Hüsna</span></a>
+            <a href="https://ayetinvakti.github.io/Ilmihal/" class="drawer-item"><div class="drawer-icon-box">📚</div><span data-i18n="menu_catechism">İlmihal</span></a>
+            <a href="https://ayetinvakti.github.io/gunluk-dualar/" class="drawer-item"><div class="drawer-icon-box">🤲</div><span data-i18n="menu_prayers">Günlük Dualar</span></a>
+            <a href="https://ayetinvakti.github.io/dini-gunler/" class="drawer-item"><div class="drawer-icon-box">📅</div><span data-i18n="menu_days">Dini Günler</span></a>
+            <a href="https://ayetinvakti.github.io/Haftanin-Hutbesi/" class="drawer-item"><div class="drawer-icon-box">📜</div><span data-i18n="menu_sermon">Haftanın Hutbesi</span></a>
+            <a href="https://ayetinvakti.github.io/namaz-ogretmeni/" class="drawer-item"><div class="drawer-icon-box">📖</div><span>Namaz Öğretmeni</span></a>
+
+            <div class="drawer-divider"></div>
+
+            <a href="https://www.youtube.com/@AyetinVakti" target="_blank" class="drawer-item">
+                <div class="drawer-icon-box" style="background: rgba(255, 0, 0, 0.1);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </div>
+                <span data-i18n="menu_youtube">YouTube Kanalı</span>
+            </a>
+            <a href="https://ayetinvakti.github.io/ayarlar/" class="drawer-item"><div class="drawer-icon-box" style="background: rgba(148, 163, 184, 0.1);">⚙️</div><span data-i18n="menu_settings">Ayarlar</span></a>
+        </div>
+    </div>
+
+    <!-- Oyun Alanı -->
+    <div class="game-container">
+        <!-- Anasayfa Ekranı -->
+        <div id="homeScreen" class="screen active">
+            <div class="home-title">🌙 Dini Tabu</div>
+            <div class="home-desc">Yasaklı kelimeleri kullanmadan ana kelimeyi takımına anlatmaya çalış! En çok puanı toplayan kazanır.</div>
+            <button class="btn-start" onclick="startGame()">Oyunu Başlat</button>
+        </div>
+
+        <!-- Oyun Ekranı -->
+        <div id="gameScreen" class="screen">
+            <div class="game-header">
+                <div class="score-box">Skor: <span id="currentScore">0</span></div>
+                <div class="timer-box"><span id="timeLeft">60</span> sn</div>
+            </div>
+
+            <div class="tabu-card">
+                <div id="targetWord" class="target-word">KÂBE</div>
+                <div class="forbidden-title">YASAKLI KELİMELER</div>
+                <ul id="forbiddenList" class="forbidden-list">
+                    <li>Yasak 1</li>
+                </ul>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-pass" onclick="nextCard('pass')">Pas</button>
+                <button class="btn btn-tabu" onclick="nextCard('tabu')">Tabu (-1)</button>
+                <button class="btn btn-correct" onclick="nextCard('correct')">Doğru (+1)</button>
+            </div>
+        </div>
+
+        <!-- Bitiş Ekranı -->
+        <div id="gameOverScreen" class="screen">
+            <div class="home-title">Süre Bitti!</div>
+            <div class="home-desc">Toplam Başarılı Skorunuz:</div>
+            <div id="finalScore" class="game-over-score">0</div>
+            <button class="btn-start" onclick="startGame()">Yeniden Başla</button>
+        </div>
+    </div>
+
+    <script>
+        // Menü Aç/Kapat Fonksiyonu
+        function toggleDrawer() {
+            document.getElementById('appDrawer').classList.toggle('active');
+            document.getElementById('drawerOverlay').classList.toggle('active');
+        }
+
+        // Tema Değiştirme Fonksiyonu
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            document.getElementById('themeToggleBtn').innerText = isLight ? '☀️' : '🌙';
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        }
+
+        // Sayfa açıldığında kaydedilmiş temayı yükle
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+            document.getElementById('themeToggleBtn').innerText = '☀️';
+        }
+
+        // Kelime Havuzu
+        const wordsData = [
+            { word: "KÂBE", forbidden: ["Mescid-i Haram", "Mekke", "Kıble", "Hac", "Tavaf"] },
+            { word: "RAMAZAN", forbidden: ["Oruç", "İftar", "Sahur", "Ay", "On Bir Ayın Sultanı"] },
+            { word: "NAMAZ", forbidden: ["Kıyam", "Rükü", "Secde", "Rekat", "Farz"] },
+            { word: "ABDEST", forbidden: ["Su", "Yüz", "Kol", "Mescid", "Temizlik"] },
+            { word: "ZEKAT", forbidden: ["Mal", "Zengin", "Fakir", "Sadaka", "İbadet"] },
+            { word: "KUR'AN", forbidden: ["Kitap", "Ayet", "Sure", "Mucize", "Hz. Muhammed"] },
+            { word: "HAC", forbidden: ["Kâbe", "Mekke", "İbadet", "Arafat", "Ziyaret"] },
+            { word: "DUA", forbidden: ["İstemek", "El", "Yakarış", "Allah", "Niyaz"] },
+            { word: "ORUÇ", forbidden: ["Yemek", "İçmek", "İmsak", "İftar", "Ramazan"] },
+            { word: "İMAM", forbidden: ["Cami", "Namaz", "Cemaat", "Önder", "Mihrap"] },
+            { word: "PEYGAMBER", forbidden: ["Elçi", "Nebi", "Hz. Muhammed", "Vahiy", "Resul"] },
+            { word: "SAHABE", forbidden: ["Arkadaş", "Hz. Muhammed", "Dönem", "Asr-ı Saadet", "Tarih"] },
+            { word: "MELEK", forbidden: ["Nur", "Kanat", "Cebrail", "Günahsız", "Yaratık"] },
+            { word: "CENNET", forbidden: ["Öbür Dünya", "Ahiret", "Cehennem", "İlahi", "Nimet"] },
+            { word: "KIBLE", forbidden: ["Yön", "Kâbe", "Mekke", "Namaz", "Dönmek"] }
+        ];
+
+        let score = 0;
+        let timeLeft = 60;
+        let timerInterval = null;
+        let currentDeck = [];
+
+        function startGame() {
+            score = 0;
+            timeLeft = 60;
+            currentDeck = [...wordsData].sort(() => Math.random() - 0.5);
+            
+            document.getElementById('currentScore').innerText = score;
+            document.getElementById('timeLeft').innerText = timeLeft;
+            
+            switchScreen('gameScreen');
+            loadNewCard();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timeLeft').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function loadNewCard() {
+            if (currentDeck.length === 0) {
+                currentDeck = [...wordsData].sort(() => Math.random() - 0.5);
+            }
+            const item = currentDeck.pop();
+            document.getElementById('targetWord').innerText = item.word;
+            const listEl = document.getElementById('forbiddenList');
+            listEl.innerHTML = '';
+            item.forbidden.forEach(f => {
+                const li = document.createElement('li');
+                li.innerText = f;
+                listEl.appendChild(li);
+            });
+        }
+
+        function nextCard(action) {
+            if (action === 'correct') score++;
+            if (action === 'tabu') score--;
+            document.getElementById('currentScore').innerText = score;
+            loadNewCard();
+        }
+
+        function endGame() {
+            document.getElementById('finalScore').innerText = score;
+            switchScreen('gameOverScreen');
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+    </script>
+</body>
+</html>
