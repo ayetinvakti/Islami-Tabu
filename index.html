@@ -252,7 +252,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             background: var(--bg-color);
             color: var(--text-color);
-            font-size: 16px !important; /* iOS zoom engellemek için minimum 16px tetikleyici */
+            font-size: 16px !important;
             outline: none;
         }
 
@@ -327,6 +327,7 @@
             cursor: pointer;
             transition: transform 0.1s, opacity 0.2s;
             color: white;
+            outline: none;
         }
 
         .btn:active {
@@ -354,6 +355,7 @@
             font-weight: 800;
             cursor: pointer;
             margin-top: 10px;
+            outline: none;
         }
 
         .screen { display: none; }
@@ -542,9 +544,14 @@
     <script>
         let audioCtx = null;
         function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
+            try {
+                if (!audioCtx || audioCtx.state === 'closed') {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            } catch(e) {}
         }
 
         function playSound(type) {
@@ -649,7 +656,7 @@
             { word: "MİZAN", forbidden: ["Terazi", "Tartı", "Günah", "Sevap", "Hesap"], level: "medium" },
             { word: "KAVSER", forbidden: ["Irmak", "Cennet", "Havuz", "Hz. Muhammed", "Su"], level: "medium" },
             { word: "BİSMİLLAH", forbidden: ["Başlamak", "İsim", "Rahman", "Rahim", "Allah"], level: "easy" },
-            { word: "ELHAMDÜLİLLAH", forbidden: ["Şükür", "Hamd", "Çok", "Ayiş", "Nimet"], level: "easy" },
+            { word: "ELHAMDÜLİLLAH", forbidden: ["Şükür", "Hamd", "Çok", "Ayşe", "Nimet"], level: "easy" },
             { word: "SUBHANALLAH", forbidden: ["Tesbih", "Yüceltmek", "Zikir", "Kusursuz", "Allah"], level: "medium" },
             { word: "ESTAĞFİRULLAH", forbidden: ["Tevbe", "Af", "İstemek", "Günah", "Affet"], level: "medium" },
             { word: "KELİME-İ ŞEHADET", forbidden: ["Tanıklık", "İslam", "İman", "Dil", "Getirmek"], level: "medium" },
@@ -674,7 +681,7 @@
         let timerInterval = null;
         let currentDeck = [];
         let currentCard = null;
-        let targetReachedBy = null;
+        let roundEnded = false;
 
         function initGameSettings() {
             gameSettings.team1 = document.getElementById('team1Name').value || "1. Takım";
@@ -687,15 +694,17 @@
 
             scores = { team1: 0, team2: 0 };
             currentTeam = 1;
-            targetReachedBy = null;
+            roundEnded = false;
             
             showTransitionScreen();
         }
 
         function showTransitionScreen() {
-            if (targetReachedBy !== null && currentTeam === 1) {
-                endGame();
-                return;
+            if (scores.team1 >= gameSettings.targetScore || scores.team2 >= gameSettings.targetScore) {
+                if (currentTeam === 1) {
+                    endGame();
+                    return;
+                }
             }
 
             let nextTeamName = currentTeam === 1 ? gameSettings.team1 : gameSettings.team2;
@@ -708,6 +717,7 @@
         function startTurn() {
             timeLeft = gameSettings.timer;
             passesLeft = gameSettings.passLimit;
+            roundEnded = false;
             
             let filteredWords = wordsData;
             if (gameSettings.difficulty !== 'all') {
@@ -727,6 +737,7 @@
 
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
+                if (roundEnded) return;
                 timeLeft--;
                 document.getElementById('timeLeft').innerText = timeLeft;
 
@@ -765,11 +776,10 @@
         }
 
         function nextCard(action) {
-            let activeScore = currentTeam === 1 ? scores.team1 : scores.team2;
+            if (roundEnded) return;
 
-            if (activeScore >= gameSettings.targetScore) {
-                return;
-            }
+            let activeScore = currentTeam === 1 ? scores.team1 : scores.team2;
+            if (activeScore >= gameSettings.targetScore) return;
 
             if (action === 'correct') {
                 if (currentTeam === 1) scores.team1++;
@@ -799,9 +809,7 @@
             document.getElementById('currentScore').innerText = currentScoreVal;
 
             if (currentScoreVal >= gameSettings.targetScore) {
-                if (targetReachedBy === null) {
-                    targetReachedBy = currentTeam;
-                }
+                roundEnded = true;
                 clearInterval(timerInterval);
                 endTurn();
                 return;
@@ -811,12 +819,13 @@
         }
 
         function endTurn() {
-            if (targetReachedBy !== null) {
-                if (currentTeam === targetReachedBy) {
-                    currentTeam = currentTeam === 1 ? 2 : 1;
-                    showTransitionScreen();
-                    return;
-                } else {
+            if (roundEnded && currentTeam === 2 && (scores.team1 >= gameSettings.targetScore || scores.team2 >= gameSettings.targetScore)) {
+                endGame();
+                return;
+            }
+
+            if (scores.team1 >= gameSettings.targetScore || scores.team2 >= gameSettings.targetScore) {
+                if (currentTeam === 2) {
                     endGame();
                     return;
                 }
