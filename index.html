@@ -621,7 +621,38 @@
             { word: "ŞEHADET", forbidden: ["Kelime", "İman", "İslam", "Dil", "Getirmek"], level: "medium" },
             { word: "VASİYET", forbidden: ["Ölüm", "Bırakmak", "Son", "Söz", "Mal"], level: "hard" },
             { word: "İHSAN", forbidden: ["Allah", "Görüyormuş", "Gibi", "Kulluk", "İyilik"], level: "hard" },
-            { word: "İTİKAF", forbidden: ["Cami", "Kapanmak", "Ramazan", "Son", "Günler"], level: "hard" }
+            { word: "İTİKAF", forbidden: ["Cami", "Kapanmak", "Ramazan", "Son", "Günler"], level: "hard" },
+            // Genişletilmiş Zengin Kelime Kütüphanesi
+            { word: "EZAN", forbidden: ["Minare", "Namaz", "Davet", "Müezzin", "Vakit"], level: "easy" },
+            { word: "CAMİ", forbidden: ["Mabet", "Cemaat", "Minare", "Kubbe", "İbadet"], level: "easy" },
+            { word: "KANDİL", forbidden: ["Gece", "Mübarek", "Işık", "Kandil", "Kandil Simidi"], level: "easy" },
+            { word: "TEFSİR", forbidden: ["Kur'an", "Ayet", "Yorum", "Açıklama", "Meal"], level: "hard" },
+            { word: "HADİS", forbidden: ["Hz. Muhammed", "Söz", "Sünnet", "Sahih", "Ravi"], level: "medium" },
+            { word: "SÜNNET", forbidden: ["Peygamber", "Yol", "Tavsiye", "Farz", "Amel"], level: "medium" },
+            { word: "FETVA", forbidden: ["Hoca", "Din", "Diyanet", "Soru", "Cevap"], level: "hard" },
+            { word: "TEVBE", forbidden: ["Günah", "Af", "Pişmanlık", "Allah", "Bağışlanma"], level: "easy" },
+            { word: "HELAL", forbidden: ["Caiz", "Yasak", "Haram", "İzin", "Din"], level: "easy" },
+            { word: "HARAM", forbidden: ["Yasak", "Günah", "Helal", "Din", "Uzak"], level: "easy" },
+            { word: "MİRAÇ", forbidden: ["Kandil", "Gökyüzü", "Namaz", "Hz. Muhammed", "Kudüs"], level: "medium" },
+            { word: "BERAAT", forbidden: ["Gecesi", "Şaban", "Günah", "Af", "Kandil"], level: "medium" },
+            { word: "KADİR", forbidden: ["Gecesi", "Bin Aydan", "Hayırlı", "Kur'an", "Ramazan"], level: "medium" },
+            { word: "SAHUR", forbidden: ["Gece", "Yemek", "Oruç", "Vakit", "İmsak"], level: "easy" },
+            { word: "İFTAR", forbidden: ["Oruç", "Akşam", "Yemek", "Su", "Ezan"], level: "easy" },
+            { word: "ASR-I SAADET", forbidden: ["Asr", "Mutluluk", "Peygamber", "Dönem", "Sahabe"], level: "hard" },
+            { word: "ASHAB-I KEFH", forbidden: ["Mağara", "Yedi", "Uykular", "Köpek", "Tarih"], level: "hard" },
+            { word: "CEHENNEM", forbidden: ["Ateş", "Azap", "Kafir", "Cennet", "Ahiret"], level: "easy" },
+            { word: "SIrat", forbidden: ["Köprü", "Kıl", "Kılıç", "Cehennem", "Geçit"], level: "medium" },
+            { word: "BERZEX", forbidden: ["Kabir", "Ahiret", "Ölüm", "Hayat", "Dünya"], level: "hard" },
+            { word: "MAHŞER", forbidden: ["Kıyamet", "Toplanma", "Alan", "Hesap", "Meydan"], level: "medium" },
+            { word: "MİZAN", forbidden: ["Terazi", "Tartı", "Günah", "Sevap", "Hesap"], level: "medium" },
+            { word: "KAVSER", forbidden: ["Irmak", "Cennet", "Havuz", "Hz. Muhammed", "Su"], level: "medium" },
+            { word: "BİSMİLLAH", forbidden: ["Başlamak", "İsim", "Rahman", "Rahim", "Allah"], level: "easy" },
+            { word: "ELHAMDÜLİLLAH", forbidden: ["Şükür", "Hamd", "Çok", "Ayiş", "Nimet"], level: "easy" },
+            { word: "SUBHANALLAH", forbidden: ["Tesbih", "Yüceltmek", "Zikir", "Kusursuz", "Allah"], level: "medium" },
+            { word: "ESTAĞFİRULLAH", forbidden: ["Tevbe", "Af", "İstemek", "Günah", "Affet"], level: "medium" },
+            { word: "KELİME-İ ŞEHADET", forbidden: ["Tanıklık", "İslam", "İman", "Dil", "Getirmek"], level: "medium" },
+            { word: "İSTİHARA", forbidden: ["Namaz", "Uyku", "Rüya", "Hayırlı", "İş"], level: "hard" },
+            { word: "TEVEKKÜL", forbidden: ["Güvenmek", "Allah", "Çalışmak", "Sonuç", "Teslimiyet"], level: "medium" }
         ];
 
         let gameSettings = {
@@ -688,7 +719,7 @@
             document.getElementById('turnAnnouncer').innerText = `${teamName} Sırası`;
             document.getElementById('currentScore').innerText = currentTeam === 1 ? scores.team1 : scores.team2;
             document.getElementById('passLeft').innerText = passesLeft;
-            document.getElementById('timeLeft').innerText = timeLeft; // Bug düzeltmesi: ilk açılışta seçilen süreyi direkt gösterir
+            document.getElementById('timeLeft').innerText = timeLeft; 
             document.getElementById('btnPass').disabled = passesLeft <= 0;
 
             switchScreen('gameScreen');
@@ -734,6 +765,13 @@
         }
 
         function nextCard(action) {
+            let activeScore = currentTeam === 1 ? scores.team1 : scores.team2;
+
+            // Eğer takım zaten hedef puana ulaştıysa kart geçişlerinde puanı artırmayı/değiştirmeyi durdur (Bug koruması)
+            if (activeScore >= gameSettings.targetScore) {
+                return;
+            }
+
             if (action === 'correct') {
                 if (currentTeam === 1) scores.team1++;
                 else scores.team2++;
@@ -761,9 +799,14 @@
             let currentScoreVal = currentTeam === 1 ? scores.team1 : scores.team2;
             document.getElementById('currentScore').innerText = currentScoreVal;
 
-            // Eğer bir takım hedef puana ulaştıysa ve henüz ilk defa ulaşıldıysa not al
-            if (currentScoreVal >= gameSettings.targetScore && targetReachedBy === null) {
-                targetReachedBy = currentTeam;
+            // Hedef puana ulaşıldıysa turu hemen o an bitirip diğer takıma geçiş hazırlığı yapıyoruz
+            if (currentScoreVal >= gameSettings.targetScore) {
+                if (targetReachedBy === null) {
+                    targetReachedBy = currentTeam;
+                }
+                clearInterval(timerInterval);
+                endTurn();
+                return;
             }
 
             loadNewCard();
@@ -772,22 +815,17 @@
         function endTurn() {
             let activeScore = currentTeam === 1 ? scores.team1 : scores.team2;
             
-            // Eğer bu tur içinde hedef puana ulaşıldıysa ve diğer takım henüz hakkını oynamadıysa,
-            // sırayı diğer takıma ver ki onlar da oynayabilsin.
             if (targetReachedBy !== null) {
                 if (currentTeam === targetReachedBy) {
-                    // Hedefleyen takım turunu bitirdi, şimdi diğer takım son kez oynayacak
                     currentTeam = currentTeam === 1 ? 2 : 1;
                     showTransitionScreen();
                     return;
                 } else {
-                    // Diğer takım da oynadı ve tur tamamlandı, direkt bitir.
                     endGame();
                     return;
                 }
             }
 
-            // Normal akış: Sırayı değiştir
             currentTeam = currentTeam === 1 ? 2 : 1;
             showTransitionScreen();
         }
