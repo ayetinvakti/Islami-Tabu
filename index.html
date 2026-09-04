@@ -2,8 +2,8 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İslami Tabu - Ayetin Vakti</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dini Tabu - Ayetin Vakti</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -30,6 +30,7 @@
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            touch-action: manipulation; /* Çift dokunma zoom'unu engeller */
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -45,7 +46,7 @@
             overscroll-behavior: contain;
         }
 
-        /* Üst Bar (Menü ve Tema Butonu) */
+        /* Üst Bar (Menü, Ana Sayfa ve Tema Butonu) */
         .top-bar {
             position: absolute;
             top: 16px;
@@ -55,6 +56,11 @@
             justify-content: space-between;
             align-items: center;
             z-index: 10;
+        }
+
+        .top-left-group {
+            display: flex;
+            gap: 8px;
         }
 
         .icon-btn {
@@ -70,6 +76,7 @@
             cursor: pointer;
             font-size: 18px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-decoration: none;
         }
 
         /* Sol Menü (Drawer) Stilleri */
@@ -190,7 +197,7 @@
         /* Oyun Konteynerı */
         .game-container {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             background: var(--card-bg);
             border-radius: 20px;
             padding: 24px;
@@ -198,13 +205,15 @@
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.05);
             margin-top: 50px;
+            max-height: 85vh;
+            overflow-y: auto;
         }
 
         .game-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             font-size: 14px;
             color: #94a3b8;
             font-weight: 600;
@@ -219,8 +228,35 @@
             font-weight: bold;
         }
 
-        .score-box {
-            font-size: 16px;
+        /* Ayarlar Alanı Form Elemanları */
+        .settings-group {
+            text-align: left;
+            margin-bottom: 16px;
+        }
+
+        .settings-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+
+        .settings-input, .settings-select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .settings-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
         }
 
         /* Tabu Kartı Tasarımı */
@@ -228,30 +264,30 @@
             background: #ffffff;
             color: #0f172a;
             border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
+            padding: 20px;
+            margin-bottom: 16px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.15);
             text-align: left;
         }
 
         .target-word {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 800;
             color: #0f172a;
             text-align: center;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
             border-bottom: 2px solid #e2e8f0;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .forbidden-title {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             color: var(--forbidden-color);
             text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             letter-spacing: 1px;
         }
 
@@ -259,31 +295,31 @@
             list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
         .forbidden-list li {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             color: #334155;
             background: #f1f5f9;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 6px 10px;
+            border-radius: 6px;
         }
 
         /* Butonlar */
         .action-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 16px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
         .btn {
-            padding: 12px 8px;
+            padding: 12px 6px;
             border: none;
-            border-radius: 12px;
-            font-size: 14px;
+            border-radius: 10px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             transition: transform 0.1s, opacity 0.2s;
@@ -294,6 +330,12 @@
             transform: scale(0.95);
         }
 
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-pass { background: #f59e0b; }
         .btn-correct { background: var(--success-color); }
         .btn-tabu { background: var(--forbidden-color); }
@@ -302,8 +344,8 @@
             width: 100%;
             background: var(--accent-color);
             color: #0f172a;
-            padding: 16px;
-            font-size: 18px;
+            padding: 14px;
+            font-size: 16px;
             border-radius: 12px;
             border: none;
             font-weight: 800;
@@ -315,24 +357,31 @@
         .screen.active { display: block; }
 
         .home-title {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 800;
             color: var(--accent-color);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .home-desc {
-            font-size: 14px;
+            font-size: 13px;
             color: #94a3b8;
-            margin-bottom: 24px;
-            line-height: 1.5;
+            margin-bottom: 16px;
+            line-height: 1.4;
         }
 
         .game-over-score {
-            font-size: 36px;
+            font-size: 32px;
             font-weight: 800;
             color: var(--accent-color);
-            margin: 20px 0;
+            margin: 16px 0;
+        }
+
+        .turn-announcer {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -340,7 +389,10 @@
 
     <!-- Üst Kontrol Barı -->
     <div class="top-bar">
-        <button class="icon-btn" onclick="toggleDrawer()">☰</button>
+        <div class="top-left-group">
+            <button class="icon-btn" onclick="toggleDrawer()">☰</button>
+            <a href="https://ayetinvakti.github.io/" class="icon-btn" title="Ana Sayfa">🏠</a>
+        </div>
         <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()">🌙</button>
     </div>
 
@@ -353,25 +405,25 @@
         </div>
         <div class="drawer-links">
             <div class="drawer-category-title">İbadet & Vakitler</div>
-            <a href="https://ayetinvakti.github.io/Namaz-vakitleri/" class="drawer-item"><div class="drawer-icon-box">🕌</div><span data-i18n="menu_prayer">Namaz Vakitleri</span></a>
-            <a href="https://ayetinvakti.github.io/kaza-namazi/" class="drawer-item"><div class="drawer-icon-box">⏳</div><span data-i18n="menu_kaza">Kaza Namazı</span></a>
+            <a href="https://ayetinvakti.github.io/Namaz-vakitleri/" class="drawer-item"><div class="drawer-icon-box">🕌</div><span>Namaz Vakitleri</span></a>
+            <a href="https://ayetinvakti.github.io/kaza-namazi/" class="drawer-item"><div class="drawer-icon-box">⏳</div><span>Kaza Namazı</span></a>
             <a href="https://ayetinvakti.github.io/5-5-namaz/" class="drawer-item"><div class="drawer-icon-box">🤲🏻</div><span>5-5 Namaz</span></a>
             <a href="https://ayetinvakti.github.io/Ramazan-ozel-imsakiye/" class="drawer-item"><div class="drawer-icon-box">🌙</div><span>Ramazan İmsakiyesi</span></a>
-            <a href="https://ayetinvakti.github.io/kible-pusulasi/" class="drawer-item"><div class="drawer-icon-box">🧭</div><span data-i18n="menu_qibla">Kıble Pusulası</span></a>
+            <a href="https://ayetinvakti.github.io/kible-pusulasi/" class="drawer-item"><div class="drawer-icon-box">🧭</div><span>Kıble Pusulası</span></a>
             <a href="https://ayetinvakti.github.io/Yakindaki-Camiler/" class="drawer-item"><div class="drawer-icon-box">🕌</div><span>Yakındaki Camiler</span></a>
-            <a href="https://ayetinvakti.github.io/zekat-hesaplama/" class="drawer-item"><div class="drawer-icon-box">💰</div><span data-i18n="menu_zekat">Zekat Hesaplama</span></a>
-            <a href="https://ayetinvakti.github.io/Zikirmatik/" class="drawer-item"><div class="drawer-icon-box">📿</div><span data-i18n="menu_dhikr">Zikirmatik</span></a>
+            <a href="https://ayetinvakti.github.io/zekat-hesaplama/" class="drawer-item"><div class="drawer-icon-box">💰</div><span>Zekat Hesaplama</span></a>
+            <a href="https://ayetinvakti.github.io/Zikirmatik/" class="drawer-item"><div class="drawer-icon-box">📿</div><span>Zikirmatik</span></a>
 
             <div class="drawer-divider"></div>
 
             <div class="drawer-category-title">Okuma & Öğrenme</div>
-            <a href="https://ayetinvakti.github.io/kuran-oku/" class="drawer-item"><div class="drawer-icon-box">📖</div><span data-i18n="menu_quran">Kur'an-ı Kerim Oku</span></a>
-            <a href="https://ayetinvakti.github.io/gunun-ayeti/" class="drawer-item"><div class="drawer-icon-box">✨</div><span data-i18n="menu_verse">Günün Ayeti</span></a>
-            <a href="esma.html" class="drawer-item"><div class="drawer-icon-box">🌙</div><span data-i18n="menu_esma">Esmaül Hüsna</span></a>
-            <a href="https://ayetinvakti.github.io/Ilmihal/" class="drawer-item"><div class="drawer-icon-box">📚</div><span data-i18n="menu_catechism">İlmihal</span></a>
-            <a href="https://ayetinvakti.github.io/gunluk-dualar/" class="drawer-item"><div class="drawer-icon-box">🤲</div><span data-i18n="menu_prayers">Günlük Dualar</span></a>
-            <a href="https://ayetinvakti.github.io/dini-gunler/" class="drawer-item"><div class="drawer-icon-box">📅</div><span data-i18n="menu_days">Dini Günler</span></a>
-            <a href="https://ayetinvakti.github.io/Haftanin-Hutbesi/" class="drawer-item"><div class="drawer-icon-box">📜</div><span data-i18n="menu_sermon">Haftanın Hutbesi</span></a>
+            <a href="https://ayetinvakti.github.io/kuran-oku/" class="drawer-item"><div class="drawer-icon-box">📖</div><span>Kur'an-ı Kerim Oku</span></a>
+            <a href="https://ayetinvakti.github.io/gunun-ayeti/" class="drawer-item"><div class="drawer-icon-box">✨</div><span>Günün Ayeti</span></a>
+            <a href="esma.html" class="drawer-item"><div class="drawer-icon-box">🌙</div><span>Esmaül Hüsna</span></a>
+            <a href="https://ayetinvakti.github.io/Ilmihal/" class="drawer-item"><div class="drawer-icon-box">📚</div><span>İlmihal</span></a>
+            <a href="https://ayetinvakti.github.io/gunluk-dualar/" class="drawer-item"><div class="drawer-icon-box">🤲</div><span>Günlük Dualar</span></a>
+            <a href="https://ayetinvakti.github.io/dini-gunler/" class="drawer-item"><div class="drawer-icon-box">📅</div><span>Dini Günler</span></a>
+            <a href="https://ayetinvakti.github.io/Haftanin-Hutbesi/" class="drawer-item"><div class="drawer-icon-box">📜</div><span>Haftanın Hutbesi</span></a>
             <a href="https://ayetinvakti.github.io/namaz-ogretmeni/" class="drawer-item"><div class="drawer-icon-box">📖</div><span>Namaz Öğretmeni</span></a>
 
             <div class="drawer-divider"></div>
@@ -380,25 +432,72 @@
                 <div class="drawer-icon-box" style="background: rgba(255, 0, 0, 0.1);">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                 </div>
-                <span data-i18n="menu_youtube">YouTube Kanalı</span>
+                <span>YouTube Kanalı</span>
             </a>
-            <a href="https://ayetinvakti.github.io/ayarlar/" class="drawer-item"><div class="drawer-icon-box" style="background: rgba(148, 163, 184, 0.1);">⚙️</div><span data-i18n="menu_settings">Ayarlar</span></a>
+            <a href="https://ayetinvakti.github.io/ayarlar/" class="drawer-item"><div class="drawer-icon-box" style="background: rgba(148, 163, 184, 0.1);">⚙️</div><span>Ayarlar</span></a>
         </div>
     </div>
 
     <!-- Oyun Alanı -->
     <div class="game-container">
-        <!-- Anasayfa Ekranı -->
+        <!-- Ayarlar ve Anasayfa Ekranı -->
         <div id="homeScreen" class="screen active">
             <div class="home-title">🌙 Dini Tabu</div>
-            <div class="home-desc">Yasaklı kelimeleri kullanmadan ana kelimeyi takımına anlatmaya çalış! En çok puanı toplayan kazanır.</div>
+            <div class="home-desc">Takımını kur, ayarlarını yapılandır ve kelimeleri anlatmaya başla!</div>
+            
+            <div class="settings-group">
+                <label>Takım 1 Adı ve Oyuncuları</label>
+                <input type="text" id="team1Name" class="settings-input" value="1. Takım (Örn: Ehli Sünnet)">
+            </div>
+
+            <div class="settings-group">
+                <label>Takım 2 Adı ve Oyuncuları</label>
+                <input type="text" id="team2Name" class="settings-input" value="2. Takım (Örn: Ashab)">
+            </div>
+
+            <div class="settings-row">
+                <div class="settings-group">
+                    <label>Süre (Saniye)</label>
+                    <input type="number" id="setTimer" class="settings-input" value="60" min="30" max="180">
+                </div>
+                <div class="settings-group">
+                    <label>Pas Hakkı</label>
+                    <input type="number" id="setPass" class="settings-input" value="3" min="0" max="10">
+                </div>
+            </div>
+
+            <div class="settings-row">
+                <div class="settings-group">
+                    <label>Hedef Puan</label>
+                    <input type="number" id="setTarget" class="settings-input" value="10" min="5" max="50">
+                </div>
+                <div class="settings-group">
+                    <label>Yasaklı Kelime Sayısı</label>
+                    <select id="setForbiddenCount" class="settings-select">
+                        <option value="3">3 Adet</option>
+                        <option value="4">4 Adet</option>
+                        <option value="5" selected>5 Adet</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <label>Zorluk Seviyesi</label>
+                <select id="setDifficulty" class="settings-select">
+                    <option value="all">Tüm Kelimeler (Normal)</option>
+                    <option value="easy">Kolay Seviye</option>
+                    <option value="hard">Zor / İleri Düzey</option>
+                </select>
+            </div>
+
             <button class="btn-start" onclick="startGame()">Oyunu Başlat</button>
         </div>
 
         <!-- Oyun Ekranı -->
         <div id="gameScreen" class="screen">
+            <div id="turnAnnouncer" class="turn-announcer">1. Takım Sırası</div>
             <div class="game-header">
-                <div class="score-box">Skor: <span id="currentScore">0</span></div>
+                <div class="score-box">Skor: <span id="currentScore">0</span> | Pas: <span id="passLeft">3</span></div>
                 <div class="timer-box"><span id="timeLeft">60</span> sn</div>
             </div>
 
@@ -411,7 +510,7 @@
             </div>
 
             <div class="action-buttons">
-                <button class="btn btn-pass" onclick="nextCard('pass')">Pas</button>
+                <button class="btn btn-pass" id="btnPass" onclick="nextCard('pass')">Pas</button>
                 <button class="btn btn-tabu" onclick="nextCard('tabu')">Tabu (-1)</button>
                 <button class="btn btn-correct" onclick="nextCard('correct')">Doğru (+1)</button>
             </div>
@@ -419,21 +518,69 @@
 
         <!-- Bitiş Ekranı -->
         <div id="gameOverScreen" class="screen">
-            <div class="home-title">Süre Bitti!</div>
-            <div class="home-desc">Toplam Başarılı Skorunuz:</div>
-            <div id="finalScore" class="game-over-score">0</div>
-            <button class="btn-start" onclick="startGame()">Yeniden Başla</button>
+            <div class="home-title" id="winnerTitle">Tebrikler!</div>
+            <div class="home-desc" id="winnerDesc">Kazanan Takım:</div>
+            <div id="finalScore" class="game-over-score">0 Puan</div>
+            <button class="btn-start" onclick="resetToHome()">Ana Ekrana Dön</button>
         </div>
     </div>
 
     <script>
-        // Menü Aç/Kapat Fonksiyonu
+        // Ses Efektleri için Web Audio API Altyapısı
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            try {
+                initAudio();
+                if(!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                if (type === 'tick') {
+                    osc.frequency.setValueAtTime(600, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'correct') {
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'tabu' || type === 'pass') {
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(150, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch(e) {}
+        }
+
+        function triggerVibration(pattern) {
+            if ("vibrate" in navigator) {
+                navigator.vibrate(pattern);
+            }
+        }
+
+        // Menü Aç/Kapat
         function toggleDrawer() {
             document.getElementById('appDrawer').classList.toggle('active');
             document.getElementById('drawerOverlay').classList.toggle('active');
         }
 
-        // Tema Değiştirme Fonksiyonu
+        // Tema Değiştirme
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
             const isLight = document.body.classList.contains('light-mode');
@@ -441,44 +588,86 @@
             localStorage.setItem('theme', isLight ? 'light' : 'dark');
         }
 
-        // Sayfa açıldığında kaydedilmiş temayı yükle
         if (localStorage.getItem('theme') === 'light') {
             document.body.classList.add('light-mode');
             document.getElementById('themeToggleBtn').innerText = '☀️';
         }
 
-        // Kelime Havuzu
+        // Genişletilmiş Kelime Havuzu
         const wordsData = [
-            { word: "KÂBE", forbidden: ["Mescid-i Haram", "Mekke", "Kıble", "Hac", "Tavaf"] },
-            { word: "RAMAZAN", forbidden: ["Oruç", "İftar", "Sahur", "Ay", "On Bir Ayın Sultanı"] },
-            { word: "NAMAZ", forbidden: ["Kıyam", "Rükü", "Secde", "Rekat", "Farz"] },
-            { word: "ABDEST", forbidden: ["Su", "Yüz", "Kol", "Mescid", "Temizlik"] },
-            { word: "ZEKAT", forbidden: ["Mal", "Zengin", "Fakir", "Sadaka", "İbadet"] },
-            { word: "KUR'AN", forbidden: ["Kitap", "Ayet", "Sure", "Mucize", "Hz. Muhammed"] },
-            { word: "HAC", forbidden: ["Kâbe", "Mekke", "İbadet", "Arafat", "Ziyaret"] },
-            { word: "DUA", forbidden: ["İstemek", "El", "Yakarış", "Allah", "Niyaz"] },
-            { word: "ORUÇ", forbidden: ["Yemek", "İçmek", "İmsak", "İftar", "Ramazan"] },
-            { word: "İMAM", forbidden: ["Cami", "Namaz", "Cemaat", "Önder", "Mihrap"] },
-            { word: "PEYGAMBER", forbidden: ["Elçi", "Nebi", "Hz. Muhammed", "Vahiy", "Resul"] },
-            { word: "SAHABE", forbidden: ["Arkadaş", "Hz. Muhammed", "Dönem", "Asr-ı Saadet", "Tarih"] },
-            { word: "MELEK", forbidden: ["Nur", "Kanat", "Cebrail", "Günahsız", "Yaratık"] },
-            { word: "CENNET", forbidden: ["Öbür Dünya", "Ahiret", "Cehennem", "İlahi", "Nimet"] },
-            { word: "KIBLE", forbidden: ["Yön", "Kâbe", "Mekke", "Namaz", "Dönmek"] }
+            { word: "KÂBE", forbidden: ["Mescid-i Haram", "Mekke", "Kıble", "Hac", "Tavaf"], level: "easy" },
+            { word: "RAMAZAN", forbidden: ["Oruç", "İftar", "Sahur", "Ay", "On Bir Ayın Sultanı"], level: "easy" },
+            { word: "NAMAZ", forbidden: ["Kıyam", "Rükü", "Secde", "Rekat", "Farz"], level: "easy" },
+            { word: "ABDEST", forbidden: ["Su", "Yüz", "Kol", "Mescid", "Temizlik"], level: "easy" },
+            { word: "ZEKAT", forbidden: ["Mal", "Zengin", "Fakir", "Sadaka", "İbadet"], level: "medium" },
+            { word: "KUR'AN", forbidden: ["Kitap", "Ayet", "Sure", "Mucize", "Hz. Muhammed"], level: "easy" },
+            { word: "HAC", forbidden: ["Kâbe", "Mekke", "İbadet", "Arafat", "Ziyaret"], level: "medium" },
+            { word: "DUA", forbidden: ["İstemek", "El", "Yakarış", "Allah", "Niyaz"], level: "easy" },
+            { word: "ORUÇ", forbidden: ["Yemek", "İçmek", "İmsak", "İftar", "Ramazan"], level: "easy" },
+            { word: "İMAM", forbidden: ["Cami", "Namaz", "Cemaat", "Önder", "Mihrap"], level: "easy" },
+            { word: "PEYGAMBER", forbidden: ["Elçi", "Nebi", "Hz. Muhammed", "Vahiy", "Resul"], level: "easy" },
+            { word: "SAHABE", forbidden: ["Arkadaş", "Hz. Muhammed", "Dönem", "Asr-ı Saadet", "Tarih"], level: "medium" },
+            { word: "MELEK", forbidden: ["Nur", "Kanat", "Cebrail", "Günahsız", "Yaratık"], level: "medium" },
+            { word: "CENNET", forbidden: ["Öbür Dünya", "Ahiret", "Cehennem", "İlahi", "Nimet"], level: "easy" },
+            { word: "KIBLE", forbidden: ["Yön", "Kâbe", "Mekke", "Namaz", "Dönmek"], level: "medium" },
+            { word: "TEHECCÜD", forbidden: ["Gece", "Namaz", "Kalkmak", "Nafile", "Uykusuzluk"], level: "hard" },
+            { word: "ŞEHADET", forbidden: ["Kelime", "İman", "İslam", "Dil", "Getirmek"], level: "medium" },
+            { word: "VASİYET", forbidden: ["Ölüm", "Bırakmak", "Son", "Söz", "Mal"], level: "hard" },
+            { word: "İHSAN", forbidden: ["Allah", "Görüyormuş", "Gibi", "Kulluk", "İyilik"], level: "hard" },
+            { word: "İTİKAF", forbidden: ["Cami", "Kapanmak", "Ramazan", "Son", "Günler"], level: "hard" }
         ];
 
-        let score = 0;
+        let gameSettings = {
+            team1: "1. Takım",
+            team2: "2. Takım",
+            timer: 60,
+            passLimit: 3,
+            targetScore: 10,
+            forbiddenCount: 5,
+            difficulty: "all"
+        };
+
+        let scores = { team1: 0, team2: 0 };
+        let currentTeam = 1;
         let timeLeft = 60;
+        let passesLeft = 3;
         let timerInterval = null;
         let currentDeck = [];
+        let currentCard = null;
 
         function startGame() {
-            score = 0;
-            timeLeft = 60;
-            currentDeck = [...wordsData].sort(() => Math.random() - 0.5);
+            gameSettings.team1 = document.getElementById('team1Name').value || "1. Takım";
+            gameSettings.team2 = document.getElementById('team2Name').value || "2. Takım";
+            gameSettings.timer = parseInt(document.getElementById('setTimer').value) || 60;
+            gameSettings.passLimit = parseInt(document.getElementById('setPass').value) || 3;
+            gameSettings.targetScore = parseInt(document.getElementById('setTarget').value) || 10;
+            gameSettings.forbiddenCount = parseInt(document.getElementById('setForbiddenCount').value) || 5;
+            gameSettings.difficulty = document.getElementById('setDifficulty').value;
+
+            scores = { team1: 0, team2: 0 };
+            currentTeam = 1;
             
-            document.getElementById('currentScore').innerText = score;
+            startTurn();
+        }
+
+        function startTurn() {
+            timeLeft = gameSettings.timer;
+            passesLeft = gameSettings.passLimit;
+            
+            // Havuzu filtrele
+            let filteredWords = wordsData;
+            if (gameSettings.difficulty !== 'all') {
+                filteredWords = wordsData.filter(w => gameSettings.difficulty === 'easy' ? w.level === 'easy' : w.level !== 'easy');
+            }
+            currentDeck = [...filteredWords].sort(() => Math.random() - 0.5);
+
+            let teamName = currentTeam === 1 ? gameSettings.team1 : gameSettings.team2;
+            document.getElementById('turnAnnouncer').innerText = `${teamName} Sırası!`;
+            document.getElementById('currentScore').innerText = currentTeam === 1 ? scores.team1 : scores.scores2 || 0;
+            document.getElementById('passLeft').innerText = passesLeft;
             document.getElementById('timeLeft').innerText = timeLeft;
-            
+            document.getElementById('btnPass').disabled = passesLeft <= 0;
+
             switchScreen('gameScreen');
             loadNewCard();
 
@@ -486,22 +675,37 @@
             timerInterval = setInterval(() => {
                 timeLeft--;
                 document.getElementById('timeLeft').innerText = timeLeft;
+
+                // Son 15 saniye tik-tak ve titreşim
+                if (timeLeft <= 15 && timeLeft > 0) {
+                    playSound('tick');
+                    triggerVibration(50);
+                }
+
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    endGame();
+                    endTurn();
                 }
             }, 1000);
         }
 
         function loadNewCard() {
             if (currentDeck.length === 0) {
-                currentDeck = [...wordsData].sort(() => Math.random() - 0.5);
+                let filteredWords = wordsData;
+                if (gameSettings.difficulty !== 'all') {
+                    filteredWords = wordsData.filter(w => gameSettings.difficulty === 'easy' ? w.level === 'easy' : w.level !== 'easy');
+                }
+                currentDeck = [...filteredWords].sort(() => Math.random() - 0.5);
             }
-            const item = currentDeck.pop();
-            document.getElementById('targetWord').innerText = item.word;
+            currentCard = currentDeck.pop();
+            
+            document.getElementById('targetWord').innerText = currentCard.word;
             const listEl = document.getElementById('forbiddenList');
             listEl.innerHTML = '';
-            item.forbidden.forEach(f => {
+            
+            // Ayarlanan yasaklı kelime sayısı kadar al
+            let forbiddenSlice = currentCard.forbidden.slice(0, gameSettings.forbiddenCount);
+            forbiddenSlice.forEach(f => {
                 const li = document.createElement('li');
                 li.innerText = f;
                 listEl.appendChild(li);
@@ -509,15 +713,63 @@
         }
 
         function nextCard(action) {
-            if (action === 'correct') score++;
-            if (action === 'tabu') score--;
-            document.getElementById('currentScore').innerText = score;
+            if (action === 'correct') {
+                if (currentTeam === 1) scores.team1++;
+                else scores.team2++;
+                playSound('correct');
+                triggerVibration(100);
+            } else if (action === 'tabu') {
+                if (currentTeam === 1) scores.team1--;
+                else scores.team2--;
+                playSound('tabu');
+                triggerVibration([80, 80, 80]);
+            } else if (action === 'pass') {
+                if (passesLeft > 0) {
+                    passesLeft--;
+                    document.getElementById('passLeft').innerText = passesLeft;
+                    if (passesLeft <= 0) {
+                        document.getElementById('btnPass').disabled = true;
+                    }
+                    playSound('pass');
+                    triggerVibration(60);
+                } else {
+                    return;
+                }
+            }
+
+            let currentScoreVal = currentTeam === 1 ? scores.team1 : scores.team2;
+            document.getElementById('currentScore').innerText = currentScoreVal;
+
+            // Hedef puana ulaşıldı mı kontrol et
+            if (currentScoreVal >= gameSettings.targetScore) {
+                clearInterval(timerInterval);
+                endGame(currentTeam);
+                return;
+            }
+
             loadNewCard();
         }
 
-        function endGame() {
-            document.getElementById('finalScore').innerText = score;
+        function endTurn() {
+            // Sırayı diğer takıma geçir
+            currentTeam = currentTeam === 1 ? 2 : 1;
+            
+            // Ara bilgilendirme veya tur değişimi için kısa ekran veya uyarı verebiliriz, doğrudan sırayı başlatıyoruz:
+            startTurn();
+        }
+
+        function endGame(winningTeamNum) {
+            let winnerName = winningTeamNum === 1 ? gameSettings.team1 : gameSettings.team2;
+            let finalScoreVal = winningTeamNum === 1 ? scores.team1 : scores.team2;
+
+            document.getElementById('winnerTitle').innerText = "Tebrikler " + winnerName + "!";
+            document.getElementById('winnerDesc').innerText = "Hedef puana ulaşıp oyunu kazandılar!";
+            document.getElementById('finalScore').innerText = finalScoreVal + " Puan";
             switchScreen('gameOverScreen');
+        }
+
+        function resetToHome() {
+            switchScreen('homeScreen');
         }
 
         function switchScreen(screenId) {
