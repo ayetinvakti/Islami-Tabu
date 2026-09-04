@@ -501,7 +501,7 @@
                 • <b>Doğru (+1):</b> Takımınız kelimeyi bildiğinde basılır, puan kazandırır.<br>
                 • <b>Tabu (-1):</b> Yasaklı kelimelerden biri ağızdan kaçarsa veya yanlış kelime anlatılırsa basılır, puan düşer.<br>
                 • <b>Pas:</b> Bilemediğiniz kartlarda pas hakkınızı kullanarak ceza almadan yeni karta geçebilirsiniz.</p>
-                <p><b>5. Oyunun Bitişi:</b> Hedef puana ilk ulaşan takım oyunu kazanır. Eşitlik durumunda diğer takımın turu tamamlaması beklenir.</p>
+                <p><b>5. Oyunun Bitişi:</b> Her iki takım da eşit sayıda tur (süre hakkı) tamamladıktan sonra oyun biter ve en yüksek puanı alan kazanır.</p>
             </div>
         </div>
     </div>
@@ -791,6 +791,7 @@
         let currentDeck = [];
         let currentCard = null;
         let roundEnded = false;
+        let roundsPlayed = 0; // Toplam tamamlanan tur sayısı
 
         function initGameSettings() {
             gameSettings.team1 = document.getElementById('team1Name').value || "1. Takım";
@@ -804,16 +805,16 @@
             scores = { team1: 0, team2: 0 };
             currentTeam = 1;
             roundEnded = false;
+            roundsPlayed = 0;
             
             showTransitionScreen();
         }
 
         function showTransitionScreen() {
-            if (scores.team1 >= gameSettings.targetScore || scores.team2 >= gameSettings.targetScore) {
-                if (currentTeam === 1) {
-                    endGame();
-                    return;
-                }
+            // Eğer her iki takım da eşit tur oynamışsa ve en az biri hedef puana ulaşmışsa oyun biter
+            if (roundsPlayed >= 2 && (scores.team1 >= gameSettings.targetScore || scores.team2 >= gameSettings.targetScore)) {
+                endGame();
+                return;
             }
 
             let nextTeamName = currentTeam === 1 ? gameSettings.team1 : gameSettings.team2;
@@ -887,9 +888,6 @@
         function nextCard(action) {
             if (roundEnded) return;
 
-            let activeScore = currentTeam === 1 ? scores.team1 : scores.team2;
-            if (activeScore >= gameSettings.targetScore) return;
-
             if (action === 'correct') {
                 if (currentTeam === 1) scores.team1++;
                 else scores.team2++;
@@ -917,24 +915,17 @@
             let currentScoreVal = currentTeam === 1 ? scores.team1 : scores.team2;
             document.getElementById('currentScore').innerText = currentScoreVal;
 
-            if (currentScoreVal >= gameSettings.targetScore) {
-                roundEnded = true;
-                clearInterval(timerInterval);
-                endTurn();
-                return;
-            }
-
             loadNewCard();
         }
 
         function endTurn() {
-            if (roundEnded && currentTeam === 2 && (scores.team1 >= gameSettings.targetScore || scores.team2 >= gameSettings.targetScore)) {
-                endGame();
-                return;
-            }
+            roundEnded = true;
+            roundsPlayed++;
 
-            if (scores.team1 >= gameSettings.targetScore || scores.team2 >= gameSettings.targetScore) {
-                if (currentTeam === 2) {
+            // Eğer 2 takım da turunu tamamladıysa ve hedef puana ulaşan varsa veya 2 tur bittiyse kontrol et
+            if (roundsPlayed >= 2 && (scores.team1 >= gameSettings.targetScore || scores.team2 >= gameSettings.targetScore || roundsPlayed >= 2)) {
+                // Eğer skorlar hala eşitse oyun uzayabilir veya direkt 2 tur sonunda bitebilir. Mevcut akışta 2 takım turu tamamlayınca bitiriyoruz.
+                if (scores.team1 !== scores.team2 || roundsPlayed >= 2) {
                     endGame();
                     return;
                 }
