@@ -30,7 +30,7 @@
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            touch-action: manipulation; /* Çift dokunma zoom'unu engeller */
+            touch-action: manipulation;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -46,7 +46,7 @@
             overscroll-behavior: contain;
         }
 
-        /* Üst Bar (Menü, Ana Sayfa ve Tema Butonu) */
+        /* Üst Bar */
         .top-bar {
             position: absolute;
             top: 16px;
@@ -79,7 +79,7 @@
             text-decoration: none;
         }
 
-        /* Sol Menü (Drawer) Stilleri */
+        /* Sol Menü (Drawer) */
         .drawer-overlay {
             position: fixed;
             top: 0;
@@ -228,7 +228,7 @@
             font-weight: bold;
         }
 
-        /* Ayarlar Alanı Form Elemanları */
+        /* Ayarlar Alanı */
         .settings-group {
             text-align: left;
             margin-bottom: 16px;
@@ -259,7 +259,7 @@
             gap: 10px;
         }
 
-        /* Tabu Kartı Tasarımı */
+        /* Tabu Kartı */
         .tabu-card {
             background: #ffffff;
             color: #0f172a;
@@ -391,12 +391,12 @@
     <div class="top-bar">
         <div class="top-left-group">
             <button class="icon-btn" onclick="toggleDrawer()">☰</button>
-            <a href="https://ayetinvakti.github.io/" class="icon-btn" title="Ana Sayfa">🏠</a>
+            <a href="https://ayetinvakti.github.io/" class="icon-btn" title="Ana Sayfa">←</a>
         </div>
         <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()">🌙</button>
     </div>
 
-    <!-- Sol Menü (Drawer) Overlay & İçerik -->
+    <!-- Sol Menü (Drawer) -->
     <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
     <div class="drawer" id="appDrawer">
         <div class="drawer-header">
@@ -447,12 +447,12 @@
             
             <div class="settings-group">
                 <label>Takım 1 Adı ve Oyuncuları</label>
-                <input type="text" id="team1Name" class="settings-input" value="1. Takım (Örn: Ehli Sünnet)">
+                <input type="text" id="team1Name" class="settings-input" value="1. Takım">
             </div>
 
             <div class="settings-group">
                 <label>Takım 2 Adı ve Oyuncuları</label>
-                <input type="text" id="team2Name" class="settings-input" value="2. Takım (Örn: Ashab)">
+                <input type="text" id="team2Name" class="settings-input" value="2. Takım">
             </div>
 
             <div class="settings-row">
@@ -490,7 +490,18 @@
                 </select>
             </div>
 
-            <button class="btn-start" onclick="startGame()">Oyunu Başlat</button>
+            <button class="btn-start" onclick="initGameSettings()">Oyunu Başlat</button>
+        </div>
+
+        <!-- Sıra Değişimi Geçiş Ekranı -->
+        <div id="turnTransitionScreen" class="screen">
+            <div class="home-title" id="transitionTitle">Sıra Diğer Takımda!</div>
+            <div class="home-desc" id="transitionDesc">Telefonu diğer takıma verin.</div>
+            <div style="font-size: 15px; font-weight: 700; color: var(--accent-color); margin-bottom: 20px;">
+                Mevcut Skorlar<br>
+                <span id="scoreBoardText">1. Takım: 0 - 2. Takım: 0</span>
+            </div>
+            <button class="btn-start" onclick="startTurn()">Turu Başlat</button>
         </div>
 
         <!-- Oyun Ekranı -->
@@ -526,7 +537,6 @@
     </div>
 
     <script>
-        // Ses Efektleri için Web Audio API Altyapısı
         let audioCtx = null;
         function initAudio() {
             if (!audioCtx) {
@@ -574,13 +584,11 @@
             }
         }
 
-        // Menü Aç/Kapat
         function toggleDrawer() {
             document.getElementById('appDrawer').classList.toggle('active');
             document.getElementById('drawerOverlay').classList.toggle('active');
         }
 
-        // Tema Değiştirme
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
             const isLight = document.body.classList.contains('light-mode');
@@ -593,7 +601,6 @@
             document.getElementById('themeToggleBtn').innerText = '☀️';
         }
 
-        // Genişletilmiş Kelime Havuzu
         const wordsData = [
             { word: "KÂBE", forbidden: ["Mescid-i Haram", "Mekke", "Kıble", "Hac", "Tavaf"], level: "easy" },
             { word: "RAMAZAN", forbidden: ["Oruç", "İftar", "Sahur", "Ay", "On Bir Ayın Sultanı"], level: "easy" },
@@ -635,7 +642,7 @@
         let currentDeck = [];
         let currentCard = null;
 
-        function startGame() {
+        function initGameSettings() {
             gameSettings.team1 = document.getElementById('team1Name').value || "1. Takım";
             gameSettings.team2 = document.getElementById('team2Name').value || "2. Takım";
             gameSettings.timer = parseInt(document.getElementById('setTimer').value) || 60;
@@ -647,14 +654,21 @@
             scores = { team1: 0, team2: 0 };
             currentTeam = 1;
             
-            startTurn();
+            showTransitionScreen();
+        }
+
+        function showTransitionScreen() {
+            let nextTeamName = currentTeam === 1 ? gameSettings.team1 : gameSettings.team2;
+            document.getElementById('transitionTitle').innerText = `${nextTeamName} Sırası!`;
+            document.getElementById('transitionDesc').innerText = "Telefonu ilgili takıma verin.";
+            document.getElementById('scoreBoardText').innerText = `${gameSettings.team1}: ${scores.team1} - ${gameSettings.team2}: ${scores.team2}`;
+            switchScreen('turnTransitionScreen');
         }
 
         function startTurn() {
             timeLeft = gameSettings.timer;
             passesLeft = gameSettings.passLimit;
             
-            // Havuzu filtrele
             let filteredWords = wordsData;
             if (gameSettings.difficulty !== 'all') {
                 filteredWords = wordsData.filter(w => gameSettings.difficulty === 'easy' ? w.level === 'easy' : w.level !== 'easy');
@@ -662,8 +676,8 @@
             currentDeck = [...filteredWords].sort(() => Math.random() - 0.5);
 
             let teamName = currentTeam === 1 ? gameSettings.team1 : gameSettings.team2;
-            document.getElementById('turnAnnouncer').innerText = `${teamName} Sırası!`;
-            document.getElementById('currentScore').innerText = currentTeam === 1 ? scores.team1 : scores.scores2 || 0;
+            document.getElementById('turnAnnouncer').innerText = `${teamName} Sırası`;
+            document.getElementById('currentScore').innerText = currentTeam === 1 ? scores.team1 : scores.team2;
             document.getElementById('passLeft').innerText = passesLeft;
             document.getElementById('timeLeft').innerText = timeLeft;
             document.getElementById('btnPass').disabled = passesLeft <= 0;
@@ -676,7 +690,6 @@
                 timeLeft--;
                 document.getElementById('timeLeft').innerText = timeLeft;
 
-                // Son 15 saniye tik-tak ve titreşim
                 if (timeLeft <= 15 && timeLeft > 0) {
                     playSound('tick');
                     triggerVibration(50);
@@ -703,7 +716,6 @@
             const listEl = document.getElementById('forbiddenList');
             listEl.innerHTML = '';
             
-            // Ayarlanan yasaklı kelime sayısı kadar al
             let forbiddenSlice = currentCard.forbidden.slice(0, gameSettings.forbiddenCount);
             forbiddenSlice.forEach(f => {
                 const li = document.createElement('li');
@@ -740,7 +752,6 @@
             let currentScoreVal = currentTeam === 1 ? scores.team1 : scores.team2;
             document.getElementById('currentScore').innerText = currentScoreVal;
 
-            // Hedef puana ulaşıldı mı kontrol et
             if (currentScoreVal >= gameSettings.targetScore) {
                 clearInterval(timerInterval);
                 endGame(currentTeam);
@@ -751,20 +762,25 @@
         }
 
         function endTurn() {
-            // Sırayı diğer takıma geçir
+            // Hedef puana ulaşıldı mı kontrol et
+            let activeScore = currentTeam === 1 ? scores.team1 : scores.team2;
+            if (activeScore >= gameSettings.targetScore) {
+                endGame(currentTeam);
+                return;
+            }
+
+            // Sırayı değiştir
             currentTeam = currentTeam === 1 ? 2 : 1;
-            
-            // Ara bilgilendirme veya tur değişimi için kısa ekran veya uyarı verebiliriz, doğrudan sırayı başlatıyoruz:
-            startTurn();
+            showTransitionScreen();
         }
 
         function endGame(winningTeamNum) {
             let winnerName = winningTeamNum === 1 ? gameSettings.team1 : gameSettings.team2;
             let finalScoreVal = winningTeamNum === 1 ? scores.team1 : scores.team2;
 
-            document.getElementById('winnerTitle').innerText = "Tebrikler " + winnerName + "!";
+            document.getElementById('winnerTitle').innerText = `Tebrikler ${winnerName}!`;
             document.getElementById('winnerDesc').innerText = "Hedef puana ulaşıp oyunu kazandılar!";
-            document.getElementById('finalScore').innerText = finalScoreVal + " Puan";
+            document.getElementById('finalScore').innerText = `${finalScoreVal} Puan`;
             switchScreen('gameOverScreen');
         }
 
