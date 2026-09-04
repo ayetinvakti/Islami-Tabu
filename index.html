@@ -371,10 +371,10 @@
         }
 
         .game-over-score {
-            font-size: 32px;
+            font-size: 24px;
             font-weight: 800;
             color: var(--accent-color);
-            margin: 16px 0;
+            margin: 12px 0;
         }
 
         .turn-announcer {
@@ -387,11 +387,11 @@
 </head>
 <body>
 
-    <!-- Üst Kontrol Barı -->
+    <!-- Üst Kontrol Barı (Sol: Ana Menü, Yanı: Sol Menü) -->
     <div class="top-bar">
         <div class="top-left-group">
-            <button class="icon-btn" onclick="toggleDrawer()">☰</button>
             <a href="https://ayetinvakti.github.io/" class="icon-btn" title="Ana Sayfa">←</a>
+            <button class="icon-btn" onclick="toggleDrawer()">☰</button>
         </div>
         <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()">🌙</button>
     </div>
@@ -529,8 +529,8 @@
 
         <!-- Bitiş Ekranı -->
         <div id="gameOverScreen" class="screen">
-            <div class="home-title" id="winnerTitle">Tebrikler!</div>
-            <div class="home-desc" id="winnerDesc">Kazanan Takım:</div>
+            <div class="home-title" id="winnerTitle">Oyun Bitti!</div>
+            <div class="home-desc" id="winnerDesc">Sonuçlar ve Kazanan Takım:</div>
             <div id="finalScore" class="game-over-score">0 Puan</div>
             <button class="btn-start" onclick="resetToHome()">Ana Ekrana Dön</button>
         </div>
@@ -641,6 +641,7 @@
         let timerInterval = null;
         let currentDeck = [];
         let currentCard = null;
+        let targetReachedBy = null; // Hedef puana ilk ulaşan takım (tur eşitliği için)
 
         function initGameSettings() {
             gameSettings.team1 = document.getElementById('team1Name').value || "1. Takım";
@@ -653,11 +654,19 @@
 
             scores = { team1: 0, team2: 0 };
             currentTeam = 1;
+            targetReachedBy = null;
             
             showTransitionScreen();
         }
 
         function showTransitionScreen() {
+            // Eğer bir takım hedefi geçtiyse ve şimdi sıra tekrar ilk takıma (1. takıma) geliyorsa, 
+            // böylece 2. takım da son hakkını oynamış ve tur eşitlenmiş demektir -> Oyunu bitir.
+            if (targetReachedBy !== null && currentTeam === 1) {
+                endGame();
+                return;
+            }
+
             let nextTeamName = currentTeam === 1 ? gameSettings.team1 : gameSettings.team2;
             document.getElementById('transitionTitle').innerText = `${nextTeamName} Sırası!`;
             document.getElementById('transitionDesc').innerText = "Telefonu ilgili takıma verin.";
@@ -679,6 +688,7 @@
             document.getElementById('turnAnnouncer').innerText = `${teamName} Sırası`;
             document.getElementById('currentScore').innerText = currentTeam === 1 ? scores.team1 : scores.team2;
             document.getElementById('passLeft').innerText = passesLeft;
+            document.getElementById('timeLeft').innerText = timeLeft; // Bug düzeltmesi: ilk açılışta seçilen süreyi direkt gösterir
             document.getElementById('btnPass').disabled = passesLeft <= 0;
 
             switchScreen('gameScreen');
@@ -751,10 +761,9 @@
             let currentScoreVal = currentTeam === 1 ? scores.team1 : scores.team2;
             document.getElementById('currentScore').innerText = currentScoreVal;
 
-            if (currentScoreVal >= gameSettings.targetScore) {
-                clearInterval(timerInterval);
-                endGame(currentTeam);
-                return;
+            // Eğer bir takım hedef puana ulaştıysa ve henüz ilk defa ulaşıldıysa not al
+            if (currentScoreVal >= gameSettings.targetScore && targetReachedBy === null) {
+                targetReachedBy = currentTeam;
             }
 
             loadNewCard();
@@ -763,23 +772,41 @@
         function endTurn() {
             let activeScore = currentTeam === 1 ? scores.team1 : scores.team2;
             
-            // Süre bittiğinde skor hedef puana ulaştıysa direkt oyunu bitir, ulaşmadıysa sırayı diğer takıma geçir
-            if (activeScore >= gameSettings.targetScore) {
-                endGame(currentTeam);
-                return;
+            // Eğer bu tur içinde hedef puana ulaşıldıysa ve diğer takım henüz hakkını oynamadıysa,
+            // sırayı diğer takıma ver ki onlar da oynayabilsin.
+            if (targetReachedBy !== null) {
+                if (currentTeam === targetReachedBy) {
+                    // Hedefleyen takım turunu bitirdi, şimdi diğer takım son kez oynayacak
+                    currentTeam = currentTeam === 1 ? 2 : 1;
+                    showTransitionScreen();
+                    return;
+                } else {
+                    // Diğer takım da oynadı ve tur tamamlandı, direkt bitir.
+                    endGame();
+                    return;
+                }
             }
 
+            // Normal akış: Sırayı değiştir
             currentTeam = currentTeam === 1 ? 2 : 1;
             showTransitionScreen();
         }
 
-        function endGame(winningTeamNum) {
-            let winnerName = winningTeamNum === 1 ? gameSettings.team1 : gameSettings.team2;
-            let finalScoreVal = winningTeamNum === 1 ? scores.team1 : scores.team2;
+        function endGame() {
+            clearInterval(timerInterval);
+            let winnerText = "";
+            
+            if (scores.team1 > scores.team2) {
+                winnerText = `🏆 Kazanan: ${gameSettings.team1}`;
+            } else if (scores.team2 > scores.team1) {
+                winnerText = `🏆 Kazanan: ${gameSettings.team2}`;
+            } else {
+                winnerText = `🤝 Maç Berabere!`;
+            }
 
-            document.getElementById('winnerTitle').innerText = `Tebrikler ${winnerName}!`;
-            document.getElementById('winnerDesc').innerText = "Hedef puana ulaşıp oyunu kazandılar!";
-            document.getElementById('finalScore').innerText = `${finalScoreVal} Puan`;
+            document.getElementById('winnerTitle').innerText = winnerText;
+            document.getElementById('winnerDesc').innerText = "Final Skorları:";
+            document.getElementById('finalScore').innerHTML = `${gameSettings.team1}: <b>${scores.team1} Puan</b><br>${gameSettings.team2}: <b>${scores.team2} Puan</b>`;
             switchScreen('gameOverScreen');
         }
 
