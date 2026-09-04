@@ -501,7 +501,7 @@
                 • <b>Doğru (+1):</b> Takımınız kelimeyi bildiğinde basılır, puan kazandırır.<br>
                 • <b>Tabu (-1):</b> Yasaklı kelimelerden biri ağızdan kaçarsa veya yanlış kelime anlatılırsa basılır, puan düşer.<br>
                 • <b>Pas:</b> Bilemediğiniz kartlarda pas hakkınızı kullanarak ceza almadan yeni karta geçebilirsiniz.</p>
-                <p><b>5. Oyunun Bitişi:</b> Her iki takım da eşit sayıda tur (süre hakkı) tamamladıktan sonra oyun biter ve en yüksek puanı alan kazanır.</p>
+                <p><b>5. Oyunun Bitişi:</b> Her iki takım da eşit sayıda tur tamamladığında veya takımlardan biri hedef puana ulaştığında oyun biter.</p>
             </div>
         </div>
     </div>
@@ -568,18 +568,18 @@
             <div class="settings-row">
                 <div class="settings-group">
                     <label>Süre (Saniye)</label>
-                    <input type="number" id="setTimer" class="settings-input" value="60" min="30" max="180">
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="setTimer" class="settings-input" value="60" min="30" max="180">
                 </div>
                 <div class="settings-group">
                     <label>Pas Hakkı</label>
-                    <input type="number" id="setPass" class="settings-input" value="3" min="0" max="10">
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="setPass" class="settings-input" value="3" min="0" max="10">
                 </div>
             </div>
 
             <div class="settings-row">
                 <div class="settings-group">
                     <label>Hedef Puan</label>
-                    <input type="number" id="setTarget" class="settings-input" value="10" min="5" max="50">
+                    <input type="number" inputmode="numeric" pattern="[0-9]*" id="setTarget" class="settings-input" value="10" min="5" max="50">
                 </div>
                 <div class="settings-group">
                     <label>Yasaklı Kelime Sayısı</label>
@@ -791,7 +791,7 @@
         let currentDeck = [];
         let currentCard = null;
         let roundEnded = false;
-        let roundsPlayed = 0; // Toplam tamamlanan tur sayısı
+        let roundsPlayed = 0;
 
         function initGameSettings() {
             gameSettings.team1 = document.getElementById('team1Name').value || "1. Takım";
@@ -811,10 +811,15 @@
         }
 
         function showTransitionScreen() {
-            // Eğer her iki takım da eşit tur oynamışsa ve en az biri hedef puana ulaşmışsa oyun biter
-            if (roundsPlayed >= 2 && (scores.team1 >= gameSettings.targetScore || scores.team2 >= gameSettings.targetScore)) {
+            // Hedef puana ulaşıldıysa VEYA her iki takım da en az birer tur tamamladıysa ve eşit tur oynandıysa oyun biter
+            let maxScore = Math.max(scores.team1, scores.team2);
+            if (maxScore >= gameSettings.targetScore && roundsPlayed >= 2 && currentTeam === 1) {
                 endGame();
                 return;
+            }
+            if (roundsPlayed >= 2 && scores.team1 !== scores.team2 && currentTeam === 1) {
+                // Eğer 2 tur bittiyse ve skorlar eşit değilse bitebilir, aksi takdirde süreye dayalı döngü sürer.
+                // İsteğe göre hem süre bitince hem skora ulaşınca bitiş aktif:
             }
 
             let nextTeamName = currentTeam === 1 ? gameSettings.team1 : gameSettings.team2;
@@ -915,6 +920,14 @@
             let currentScoreVal = currentTeam === 1 ? scores.team1 : scores.team2;
             document.getElementById('currentScore').innerText = currentScoreVal;
 
+            // Hedef puana anında ulaşma kontrolü (İstenen özellik: skora ulaşınca da bitsin)
+            if (currentScoreVal >= gameSettings.targetScore) {
+                roundEnded = true;
+                clearInterval(timerInterval);
+                endGame();
+                return;
+            }
+
             loadNewCard();
         }
 
@@ -922,13 +935,10 @@
             roundEnded = true;
             roundsPlayed++;
 
-            // Eğer 2 takım da turunu tamamladıysa ve hedef puana ulaşan varsa veya 2 tur bittiyse kontrol et
-            if (roundsPlayed >= 2 && (scores.team1 >= gameSettings.targetScore || scores.team2 >= gameSettings.targetScore || roundsPlayed >= 2)) {
-                // Eğer skorlar hala eşitse oyun uzayabilir veya direkt 2 tur sonunda bitebilir. Mevcut akışta 2 takım turu tamamlayınca bitiriyoruz.
-                if (scores.team1 !== scores.team2 || roundsPlayed >= 2) {
-                    endGame();
-                    return;
-                }
+            // Her iki takım da sürelerini tamamladıysa (eşit hak bittiyse) kontrol et
+            if (roundsPlayed >= 2) {
+                endGame();
+                return;
             }
 
             currentTeam = currentTeam === 1 ? 2 : 1;
