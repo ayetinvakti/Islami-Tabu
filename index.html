@@ -679,7 +679,6 @@
             document.getElementById('turnAnnouncer').innerText = `${teamName} Sırası`;
             document.getElementById('currentScore').innerText = currentTeam === 1 ? scores.team1 : scores.team2;
             document.getElementById('passLeft').innerText = passesLeft;
-            document.getElementById('timeLeft').innerText = timeLeft;
             document.getElementById('btnPass').disabled = passesLeft <= 0;
 
             switchScreen('gameScreen');
@@ -762,14 +761,14 @@
         }
 
         function endTurn() {
-            // Hedef puana ulaşıldı mı kontrol et
             let activeScore = currentTeam === 1 ? scores.team1 : scores.team2;
+            
+            // Süre bittiğinde skor hedef puana ulaştıysa direkt oyunu bitir, ulaşmadıysa sırayı diğer takıma geçir
             if (activeScore >= gameSettings.targetScore) {
                 endGame(currentTeam);
                 return;
             }
 
-            // Sırayı değiştir
             currentTeam = currentTeam === 1 ? 2 : 1;
             showTransitionScreen();
         }
