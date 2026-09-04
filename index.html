@@ -31,6 +31,7 @@
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             touch-action: manipulation;
+            -webkit-text-size-adjust: 100%;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -44,6 +45,8 @@
             justify-content: center;
             padding: 16px;
             overscroll-behavior: contain;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         /* Üst Bar */
@@ -249,7 +252,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             background: var(--bg-color);
             color: var(--text-color);
-            font-size: 14px;
+            font-size: 16px !important; /* iOS zoom engellemek için minimum 16px tetikleyici */
             outline: none;
         }
 
@@ -622,7 +625,6 @@
             { word: "VASİYET", forbidden: ["Ölüm", "Bırakmak", "Son", "Söz", "Mal"], level: "hard" },
             { word: "İHSAN", forbidden: ["Allah", "Görüyormuş", "Gibi", "Kulluk", "İyilik"], level: "hard" },
             { word: "İTİKAF", forbidden: ["Cami", "Kapanmak", "Ramazan", "Son", "Günler"], level: "hard" },
-            // Genişletilmiş Zengin Kelime Kütüphanesi
             { word: "EZAN", forbidden: ["Minare", "Namaz", "Davet", "Müezzin", "Vakit"], level: "easy" },
             { word: "CAMİ", forbidden: ["Mabet", "Cemaat", "Minare", "Kubbe", "İbadet"], level: "easy" },
             { word: "KANDİL", forbidden: ["Gece", "Mübarek", "Işık", "Kandil", "Kandil Simidi"], level: "easy" },
@@ -641,7 +643,7 @@
             { word: "ASR-I SAADET", forbidden: ["Asr", "Mutluluk", "Peygamber", "Dönem", "Sahabe"], level: "hard" },
             { word: "ASHAB-I KEFH", forbidden: ["Mağara", "Yedi", "Uykular", "Köpek", "Tarih"], level: "hard" },
             { word: "CEHENNEM", forbidden: ["Ateş", "Azap", "Kafir", "Cennet", "Ahiret"], level: "easy" },
-            { word: "SIrat", forbidden: ["Köprü", "Kıl", "Kılıç", "Cehennem", "Geçit"], level: "medium" },
+            { word: "SIRAT", forbidden: ["Köprü", "Kıl", "Kılıç", "Cehennem", "Geçit"], level: "medium" },
             { word: "BERZEX", forbidden: ["Kabir", "Ahiret", "Ölüm", "Hayat", "Dünya"], level: "hard" },
             { word: "MAHŞER", forbidden: ["Kıyamet", "Toplanma", "Alan", "Hesap", "Meydan"], level: "medium" },
             { word: "MİZAN", forbidden: ["Terazi", "Tartı", "Günah", "Sevap", "Hesap"], level: "medium" },
@@ -672,7 +674,7 @@
         let timerInterval = null;
         let currentDeck = [];
         let currentCard = null;
-        let targetReachedBy = null; // Hedef puana ilk ulaşan takım (tur eşitliği için)
+        let targetReachedBy = null;
 
         function initGameSettings() {
             gameSettings.team1 = document.getElementById('team1Name').value || "1. Takım";
@@ -691,8 +693,6 @@
         }
 
         function showTransitionScreen() {
-            // Eğer bir takım hedefi geçtiyse ve şimdi sıra tekrar ilk takıma (1. takıma) geliyorsa, 
-            // böylece 2. takım da son hakkını oynamış ve tur eşitlenmiş demektir -> Oyunu bitir.
             if (targetReachedBy !== null && currentTeam === 1) {
                 endGame();
                 return;
@@ -767,7 +767,6 @@
         function nextCard(action) {
             let activeScore = currentTeam === 1 ? scores.team1 : scores.team2;
 
-            // Eğer takım zaten hedef puana ulaştıysa kart geçişlerinde puanı artırmayı/değiştirmeyi durdur (Bug koruması)
             if (activeScore >= gameSettings.targetScore) {
                 return;
             }
@@ -799,7 +798,6 @@
             let currentScoreVal = currentTeam === 1 ? scores.team1 : scores.team2;
             document.getElementById('currentScore').innerText = currentScoreVal;
 
-            // Hedef puana ulaşıldıysa turu hemen o an bitirip diğer takıma geçiş hazırlığı yapıyoruz
             if (currentScoreVal >= gameSettings.targetScore) {
                 if (targetReachedBy === null) {
                     targetReachedBy = currentTeam;
@@ -813,8 +811,6 @@
         }
 
         function endTurn() {
-            let activeScore = currentTeam === 1 ? scores.team1 : scores.team2;
-            
             if (targetReachedBy !== null) {
                 if (currentTeam === targetReachedBy) {
                     currentTeam = currentTeam === 1 ? 2 : 1;
