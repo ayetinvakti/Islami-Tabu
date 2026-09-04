@@ -66,6 +66,11 @@
             gap: 8px;
         }
 
+        .top-right-group {
+            display: flex;
+            gap: 8px;
+        }
+
         .icon-btn {
             background: var(--card-bg);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -80,6 +85,7 @@
             font-size: 18px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             text-decoration: none;
+            outline: none;
         }
 
         /* Sol Menü (Drawer) */
@@ -195,6 +201,82 @@
             height: 1px;
             background: rgba(255, 255, 255, 0.05);
             margin: 12px 0;
+        }
+
+        /* Nasıl Oynanır Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-box {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 10px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent-color);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .modal-content {
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #94a3b8;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-right: 4px;
+        }
+
+        .modal-content b {
+            color: var(--text-color);
         }
 
         /* Oyun Konteynerı */
@@ -392,13 +474,36 @@
 </head>
 <body>
 
-    <!-- Üst Kontrol Barı (Sol: Ana Menü, Yanı: Sol Menü) -->
+    <!-- Üst Kontrol Barı -->
     <div class="top-bar">
         <div class="top-left-group">
             <a href="https://ayetinvakti.github.io/" class="icon-btn" title="Ana Sayfa">←</a>
             <button class="icon-btn" onclick="toggleDrawer()">☰</button>
         </div>
-        <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()">🌙</button>
+        <div class="top-right-group">
+            <button class="icon-btn" onclick="toggleHowToPlay()" title="Nasıl Oynanır?">❓</button>
+            <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Tema Değiştir">🌙</button>
+        </div>
+    </div>
+
+    <!-- Nasıl Oynanır Modal Penceresi -->
+    <div class="modal-overlay" id="howToPlayModal" onclick="toggleHowToPlay()">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">📖 Nasıl Oynanır?</div>
+                <button class="modal-close" onclick="toggleHowToPlay()">✕</button>
+            </div>
+            <div class="modal-content">
+                <p><b>1. Takım Kurulumu:</b> Oyun en az iki takımla oynanır. Takım isimlerini belirleyip süre, pas hakkı ve hedef puanı ayarlayarak oyunu başlatın.</p>
+                <p><b>2. Kelime Anlatımı:</b> Sırası gelen takımın anlatıcısı, üstteki ana kelimeyi takım arkadaşlarına anlatmaya çalışır.</p>
+                <p><b>3. Yasaklı Kelimeler:</b> Ana kelimeyi anlatırken kartın altında listelenen <b>yasaklı kelimeleri</b> (veya köklerini) kesinlikle kullanamazsınız.</p>
+                <p><b>4. Butonların Kullanımı:</b><br>
+                • <b>Doğru (+1):</b> Takımınız kelimeyi bildiğinde basılır, puan kazandırır.<br>
+                • <b>Tabu (-1):</b> Yasaklı kelimelerden biri ağızdan kaçarsa veya yanlış kelime anlatılırsa basılır, puan düşer.<br>
+                • <b>Pas:</b> Bilemediğiniz kartlarda pas hakkınızı kullanarak ceza almadan yeni karta geçebilirsiniz.</p>
+                <p><b>5. Oyunun Bitişi:</b> Hedef puana ilk ulaşan takım oyunu kazanır. Eşitlik durumunda diğer takımın turu tamamlaması beklenir.</p>
+            </div>
+        </div>
     </div>
 
     <!-- Sol Menü (Drawer) -->
@@ -599,6 +704,10 @@
             document.getElementById('drawerOverlay').classList.toggle('active');
         }
 
+        function toggleHowToPlay() {
+            document.getElementById('howToPlayModal').classList.toggle('active');
+        }
+
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
             const isLight = document.body.classList.contains('light-mode');
@@ -651,7 +760,7 @@
             { word: "ASHAB-I KEFH", forbidden: ["Mağara", "Yedi", "Uykular", "Köpek", "Tarih"], level: "hard" },
             { word: "CEHENNEM", forbidden: ["Ateş", "Azap", "Kafir", "Cennet", "Ahiret"], level: "easy" },
             { word: "SIRAT", forbidden: ["Köprü", "Kıl", "Kılıç", "Cehennem", "Geçit"], level: "medium" },
-            { word: "BERZAH", forbidden: ["Kabir", "Ahiret", "Ölüm", "Hayat", "Dünya"], level: "hard" },
+            { word: "BERZEX", forbidden: ["Kabir", "Ahiret", "Ölüm", "Hayat", "Dünya"], level: "hard" },
             { word: "MAHŞER", forbidden: ["Kıyamet", "Toplanma", "Alan", "Hesap", "Meydan"], level: "medium" },
             { word: "MİZAN", forbidden: ["Terazi", "Tartı", "Günah", "Sevap", "Hesap"], level: "medium" },
             { word: "KAVSER", forbidden: ["Irmak", "Cennet", "Havuz", "Hz. Muhammed", "Su"], level: "medium" },
