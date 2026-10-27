@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+    <script>
+        // Tema ve özel renk paleti (titremeyi önlemek için en başta çalışır)
+        (function () {
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'light' || (!savedTheme && !systemPrefersDark)) {
+                document.documentElement.classList.add('light-mode');
+            }
+            const root = document.documentElement.style;
+            const savedAccent = localStorage.getItem('custom_accent');
+            const savedBg = localStorage.getItem('custom_bg');
+            const savedText = localStorage.getItem('custom_text');
+            if (savedAccent) root.setProperty('--accent-color', savedAccent);
+            if (savedBg) {
+                root.setProperty('--bg-color', savedBg);
+                root.setProperty('--card-bg', savedBg);
+            }
+            if (savedText) root.setProperty('--text-color', savedText);
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dini Tabu - Ayetin Vakti</title>
@@ -17,7 +37,7 @@
             --drawer-bg: #162032;
         }
 
-        body.light-mode {
+        html.light-mode {
             --bg-color: #f1f5f9;
             --card-bg: #ffffff;
             --text-color: #0f172a;
@@ -49,6 +69,12 @@
             user-select: none;
         }
 
+        /* iOS'ta body user-select:none iken input'a yazı yazılamayabilir */
+        input, select {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
         /* Üst Bar */
         .top-bar {
             position: absolute;
@@ -61,19 +87,14 @@
             z-index: 10;
         }
 
-        .top-left-group {
-            display: flex;
-            gap: 8px;
-        }
-
-        .top-right-group {
+        .top-left-group, .top-right-group {
             display: flex;
             gap: 8px;
         }
 
         .icon-btn {
             background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(128, 128, 128, 0.2);
             color: var(--text-color);
             width: 42px;
             height: 42px;
@@ -131,7 +152,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(128, 128, 128, 0.15);
         }
 
         .drawer-title {
@@ -199,7 +220,7 @@
 
         .drawer-divider {
             height: 1px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(128, 128, 128, 0.15);
             margin: 12px 0;
         }
 
@@ -235,7 +256,7 @@
             border-radius: 20px;
             padding: 24px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(128, 128, 128, 0.2);
             display: flex;
             flex-direction: column;
             text-align: left;
@@ -246,7 +267,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(128, 128, 128, 0.15);
             padding-bottom: 10px;
         }
 
@@ -288,7 +309,7 @@
             padding: 24px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(128, 128, 128, 0.12);
             margin-top: 50px;
             max-height: 85vh;
             overflow-y: auto;
@@ -313,6 +334,11 @@
             font-weight: bold;
         }
 
+        .timer-box.danger {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--forbidden-color);
+        }
+
         /* Ayarlar Alanı */
         .settings-group {
             text-align: left;
@@ -331,7 +357,7 @@
             width: 100%;
             padding: 10px 14px;
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(128, 128, 128, 0.25);
             background: var(--bg-color);
             color: var(--text-color);
             font-size: 16px !important;
@@ -356,7 +382,7 @@
         }
 
         .target-word {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 800;
             color: #0f172a;
             text-align: center;
@@ -365,6 +391,7 @@
             border-bottom: 2px solid #e2e8f0;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            overflow-wrap: anywhere;
         }
 
         .forbidden-title {
@@ -440,6 +467,20 @@
             outline: none;
         }
 
+        .btn-secondary {
+            width: 100%;
+            background: transparent;
+            color: #94a3b8;
+            padding: 12px;
+            font-size: 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(128, 128, 128, 0.3);
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            outline: none;
+        }
+
         .screen { display: none; }
         .screen.active { display: block; }
 
@@ -458,10 +499,11 @@
         }
 
         .game-over-score {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 800;
             color: var(--accent-color);
             margin: 12px 0;
+            line-height: 1.6;
         }
 
         .turn-announcer {
@@ -494,14 +536,14 @@
                 <button class="modal-close" onclick="toggleHowToPlay()">✕</button>
             </div>
             <div class="modal-content">
-                <p><b>1. Takım Kurulumu:</b> Oyun en az iki takımla oynanır. Takım isimlerini belirleyip süre, pas hakkı ve hedef puanı ayarlayarak oyunu başlatın.</p>
+                <p><b>1. Takım Kurulumu:</b> Oyun iki takımla oynanır. Takım isimlerini belirleyip süre, pas hakkı ve hedef puanı ayarlayarak oyunu başlatın.</p>
                 <p><b>2. Kelime Anlatımı:</b> Sırası gelen takımın anlatıcısı, üstteki ana kelimeyi takım arkadaşlarına anlatmaya çalışır.</p>
                 <p><b>3. Yasaklı Kelimeler:</b> Ana kelimeyi anlatırken kartın altında listelenen <b>yasaklı kelimeleri</b> (veya köklerini) kesinlikle kullanamazsınız.</p>
                 <p><b>4. Butonların Kullanımı:</b><br>
                 • <b>Doğru (+1):</b> Takımınız kelimeyi bildiğinde basılır, puan kazandırır.<br>
-                • <b>Tabu (-1):</b> Yasaklı kelimelerden biri ağızdan kaçarsa veya yanlış kelime anlatılırsa basılır, puan düşer.<br>
+                • <b>Tabu (-1):</b> Yasaklı kelimelerden biri ağızdan kaçarsa basılır, puan düşer.<br>
                 • <b>Pas:</b> Bilemediğiniz kartlarda pas hakkınızı kullanarak ceza almadan yeni karta geçebilirsiniz.</p>
-                <p><b>5. Oyunun Bitişi:</b> Her iki takım da eşit sayıda tur tamamladığında veya takımlardan biri hedef puana ulaştığında oyun biter.</p>
+                <p><b>5. Oyunun Bitişi:</b> Her takım eşit sayıda tur oynar. Hedef puana ulaşan takımın turu hemen biter. İki takımın da turu tamamlandığında biri hedef puana ulaşmış ve skorlar eşit değilse oyun biter; berabere kalırsanız oyun bir tur daha devam eder. Dilerseniz turlar arasında "Oyunu Bitir" ile de sonlandırabilirsiniz.</p>
             </div>
         </div>
     </div>
@@ -538,7 +580,7 @@
 
             <div class="drawer-divider"></div>
 
-            <a href="https://www.youtube.com/@AyetinVakti" target="_blank" class="drawer-item">
+            <a href="https://www.youtube.com/@AyetinVakti" target="_blank" rel="noopener" class="drawer-item">
                 <div class="drawer-icon-box" style="background: rgba(255, 0, 0, 0.1);">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                 </div>
@@ -554,15 +596,15 @@
         <div id="homeScreen" class="screen active">
             <div class="home-title">🌙 Dini Tabu</div>
             <div class="home-desc">Takımını kur, ayarlarını yapılandır ve kelimeleri anlatmaya başla!</div>
-            
+
             <div class="settings-group">
-                <label>Takım 1 Adı ve Oyuncuları</label>
-                <input type="text" id="team1Name" class="settings-input" value="1. Takım">
+                <label>Takım 1 Adı</label>
+                <input type="text" id="team1Name" class="settings-input" value="1. Takım" maxlength="20">
             </div>
 
             <div class="settings-group">
-                <label>Takım 2 Adı ve Oyuncuları</label>
-                <input type="text" id="team2Name" class="settings-input" value="2. Takım">
+                <label>Takım 2 Adı</label>
+                <input type="text" id="team2Name" class="settings-input" value="2. Takım" maxlength="20">
             </div>
 
             <div class="settings-row">
@@ -612,6 +654,7 @@
                 <span id="scoreBoardText">1. Takım: 0 - 2. Takım: 0</span>
             </div>
             <button class="btn-start" onclick="startTurn()">Turu Başlat</button>
+            <button class="btn-secondary" id="btnEndGame" onclick="endGame()" style="display:none;">Oyunu Bitir</button>
         </div>
 
         <!-- Oyun Ekranı -->
@@ -619,7 +662,7 @@
             <div id="turnAnnouncer" class="turn-announcer">1. Takım Sırası</div>
             <div class="game-header">
                 <div class="score-box">Skor: <span id="currentScore">0</span> | Pas: <span id="passLeft">3</span></div>
-                <div class="timer-box"><span id="timeLeft">60</span> sn</div>
+                <div class="timer-box" id="timerBox"><span id="timeLeft">60</span> sn</div>
             </div>
 
             <div class="tabu-card">
@@ -662,7 +705,7 @@
         function playSound(type) {
             try {
                 initAudio();
-                if(!audioCtx) return;
+                if (!audioCtx) return;
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
@@ -682,6 +725,13 @@
                     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
                     osc.start(now);
                     osc.stop(now + 0.2);
+                } else if (type === 'end') {
+                    osc.frequency.setValueAtTime(520, now);
+                    osc.frequency.exponentialRampToValueAtTime(220, now + 0.5);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                    osc.start(now);
+                    osc.stop(now + 0.6);
                 } else if (type === 'tabu' || type === 'pass') {
                     osc.frequency.setValueAtTime(300, now);
                     osc.frequency.exponentialRampToValueAtTime(150, now + 0.2);
@@ -708,17 +758,27 @@
             document.getElementById('howToPlayModal').classList.toggle('active');
         }
 
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-            const isLight = document.body.classList.contains('light-mode');
-            document.getElementById('themeToggleBtn').innerText = isLight ? '☀️' : '🌙';
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Escape') return;
+            document.getElementById('appDrawer').classList.remove('active');
+            document.getElementById('drawerOverlay').classList.remove('active');
+            document.getElementById('howToPlayModal').classList.remove('active');
+        });
+
+        const themeBtn = document.getElementById('themeToggleBtn');
+
+        function updateThemeButton() {
+            const isLight = document.documentElement.classList.contains('light-mode');
+            themeBtn.innerText = isLight ? '☀️' : '🌙';
         }
 
-        if (localStorage.getItem('theme') === 'light') {
-            document.body.classList.add('light-mode');
-            document.getElementById('themeToggleBtn').innerText = '☀️';
+        function toggleTheme() {
+            const isLight = document.documentElement.classList.toggle('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            updateThemeButton();
         }
+
+        updateThemeButton();
 
         const wordsData = [
             { word: "KÂBE", forbidden: ["Mescid-i Haram", "Mekke", "Kıble", "Hac", "Tavaf"], level: "easy" },
@@ -737,13 +797,13 @@
             { word: "CENNET", forbidden: ["Öbür Dünya", "Ahiret", "Cehennem", "İlahi", "Nimet"], level: "easy" },
             { word: "KIBLE", forbidden: ["Yön", "Kâbe", "Mekke", "Namaz", "Dönmek"], level: "medium" },
             { word: "TEHECCÜD", forbidden: ["Gece", "Namaz", "Kalkmak", "Nafile", "Uykusuzluk"], level: "hard" },
-            { word: "ŞEHADET", forbidden: ["Kelime", "İman", "İslam", "Dil", "Getirmek"], level: "medium" },
+            { word: "ŞEHİT", forbidden: ["Vatan", "Savaş", "Can", "Gazi", "Ahiret"], level: "easy" },
             { word: "VASİYET", forbidden: ["Ölüm", "Bırakmak", "Son", "Söz", "Mal"], level: "hard" },
             { word: "İHSAN", forbidden: ["Allah", "Görüyormuş", "Gibi", "Kulluk", "İyilik"], level: "hard" },
             { word: "İTİKAF", forbidden: ["Cami", "Kapanmak", "Ramazan", "Son", "Günler"], level: "hard" },
             { word: "EZAN", forbidden: ["Minare", "Namaz", "Davet", "Müezzin", "Vakit"], level: "easy" },
             { word: "CAMİ", forbidden: ["Mabet", "Cemaat", "Minare", "Kubbe", "İbadet"], level: "easy" },
-            { word: "KANDİL", forbidden: ["Gece", "Mübarek", "Işık", "Kandil", "Kandil Simidi"], level: "easy" },
+            { word: "KANDİL", forbidden: ["Gece", "Mübarek", "Işık", "Simit", "Lamba"], level: "easy" },
             { word: "TEFSİR", forbidden: ["Kur'an", "Ayet", "Yorum", "Açıklama", "Meal"], level: "hard" },
             { word: "HADİS", forbidden: ["Hz. Muhammed", "Söz", "Sünnet", "Sahih", "Ravi"], level: "medium" },
             { word: "SÜNNET", forbidden: ["Peygamber", "Yol", "Tavsiye", "Farz", "Amel"], level: "medium" },
@@ -757,7 +817,7 @@
             { word: "SAHUR", forbidden: ["Gece", "Yemek", "Oruç", "Vakit", "İmsak"], level: "easy" },
             { word: "İFTAR", forbidden: ["Oruç", "Akşam", "Yemek", "Su", "Ezan"], level: "easy" },
             { word: "ASR-I SAADET", forbidden: ["Asr", "Mutluluk", "Peygamber", "Dönem", "Sahabe"], level: "hard" },
-            { word: "ASHAB-I KEFH", forbidden: ["Mağara", "Yedi", "Uykular", "Köpek", "Tarih"], level: "hard" },
+            { word: "ASHAB-I KEHF", forbidden: ["Mağara", "Yedi", "Uykular", "Köpek", "Tarih"], level: "hard" },
             { word: "CEHENNEM", forbidden: ["Ateş", "Azap", "Kafir", "Cennet", "Ahiret"], level: "easy" },
             { word: "SIRAT", forbidden: ["Köprü", "Kıl", "Kılıç", "Cehennem", "Geçit"], level: "medium" },
             { word: "BERZAH", forbidden: ["Kabir", "Ahiret", "Ölüm", "Hayat", "Dünya"], level: "hard" },
@@ -765,7 +825,7 @@
             { word: "MİZAN", forbidden: ["Terazi", "Tartı", "Günah", "Sevap", "Hesap"], level: "medium" },
             { word: "KAVSER", forbidden: ["Irmak", "Cennet", "Havuz", "Hz. Muhammed", "Su"], level: "medium" },
             { word: "BİSMİLLAH", forbidden: ["Başlamak", "İsim", "Rahman", "Rahim", "Allah"], level: "easy" },
-            { word: "ELHAMDÜLİLLAH", forbidden: ["Şükür", "Hamd", "Çok", "Ayşe", "Nimet"], level: "easy" },
+            { word: "ELHAMDÜLİLLAH", forbidden: ["Şükür", "Hamd", "Övgü", "Nimet", "Allah"], level: "easy" },
             { word: "SUBHANALLAH", forbidden: ["Tesbih", "Yüceltmek", "Zikir", "Kusursuz", "Allah"], level: "medium" },
             { word: "ESTAĞFİRULLAH", forbidden: ["Tevbe", "Af", "İstemek", "Günah", "Affet"], level: "medium" },
             { word: "KELİME-İ ŞEHADET", forbidden: ["Tanıklık", "İslam", "İman", "Dil", "Getirmek"], level: "medium" },
@@ -788,102 +848,128 @@
         let timeLeft = 60;
         let passesLeft = 3;
         let timerInterval = null;
+        let turnEndAt = 0;
         let currentDeck = [];
         let currentCard = null;
         let roundEnded = false;
-        let roundsPlayed = 0;
+        let roundsPlayed = 0; // Oynanan toplam tur (her takımın turu ayrı sayılır)
+
+        // Boş / geçersiz değerleri varsayılana çeker, 0'ı da geçerli sayar
+        function readNumber(id, fallback, min, max) {
+            const n = parseInt(document.getElementById(id).value, 10);
+            if (isNaN(n)) return fallback;
+            return Math.min(max, Math.max(min, n));
+        }
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function buildDeck() {
+            let pool = wordsData;
+            if (gameSettings.difficulty === 'easy') {
+                pool = wordsData.filter(w => w.level === 'easy');
+            } else if (gameSettings.difficulty === 'hard') {
+                pool = wordsData.filter(w => w.level !== 'easy');
+            }
+            let deck = shuffle(pool);
+            // Yeni deste, bir önceki kartla başlamasın
+            if (currentCard && deck.length > 1 && deck[deck.length - 1].word === currentCard.word) {
+                deck.unshift(deck.pop());
+            }
+            return deck;
+        }
 
         function initGameSettings() {
-            gameSettings.team1 = document.getElementById('team1Name').value || "1. Takım";
-            gameSettings.team2 = document.getElementById('team2Name').value || "2. Takım";
-            gameSettings.timer = parseInt(document.getElementById('setTimer').value) || 60;
-            gameSettings.passLimit = parseInt(document.getElementById('setPass').value) || 3;
-            gameSettings.targetScore = parseInt(document.getElementById('setTarget').value) || 10;
-            gameSettings.forbiddenCount = parseInt(document.getElementById('setForbiddenCount').value) || 5;
+            initAudio();
+
+            gameSettings.team1 = document.getElementById('team1Name').value.trim() || "1. Takım";
+            gameSettings.team2 = document.getElementById('team2Name').value.trim() || "2. Takım";
+            gameSettings.timer = readNumber('setTimer', 60, 30, 180);
+            gameSettings.passLimit = readNumber('setPass', 3, 0, 10);
+            gameSettings.targetScore = readNumber('setTarget', 10, 5, 50);
+            gameSettings.forbiddenCount = parseInt(document.getElementById('setForbiddenCount').value, 10) || 5;
             gameSettings.difficulty = document.getElementById('setDifficulty').value;
 
             scores = { team1: 0, team2: 0 };
             currentTeam = 1;
             roundEnded = false;
             roundsPlayed = 0;
-            
+            currentCard = null;
+            currentDeck = buildDeck(); // Kartlar oyun boyunca tekrarlanmadan tüketilir
+
             showTransitionScreen();
         }
 
         function showTransitionScreen() {
-            // Hedef puana ulaşıldıysa VEYA her iki takım da en az birer tur tamamladıysa ve eşit tur oynandıysa oyun biter
-            let maxScore = Math.max(scores.team1, scores.team2);
-            if (maxScore >= gameSettings.targetScore && roundsPlayed >= 2 && currentTeam === 1) {
-                endGame();
-                return;
-            }
-            if (roundsPlayed >= 2 && scores.team1 !== scores.team2 && currentTeam === 1) {
-                // Eğer 2 tur bittiyse ve skorlar eşit değilse bitebilir, aksi takdirde süreye dayalı döngü sürer.
-                // İsteğe göre hem süre bitince hem skora ulaşınca bitiş aktif:
-            }
-
-            let nextTeamName = currentTeam === 1 ? gameSettings.team1 : gameSettings.team2;
+            const nextTeamName = currentTeam === 1 ? gameSettings.team1 : gameSettings.team2;
+            const roundNo = Math.floor(roundsPlayed / 2) + 1;
             document.getElementById('transitionTitle').innerText = `${nextTeamName} Sırası!`;
-            document.getElementById('transitionDesc').innerText = "Telefonu ilgili takıma verin.";
+            document.getElementById('transitionDesc').innerText = `${roundNo}. Tur - Telefonu ilgili takıma verin.`;
             document.getElementById('scoreBoardText').innerText = `${gameSettings.team1}: ${scores.team1} - ${gameSettings.team2}: ${scores.team2}`;
+            // "Oyunu Bitir" yalnızca iki takım da eşit tur oynadığında görünür
+            document.getElementById('btnEndGame').style.display = (roundsPlayed > 0 && roundsPlayed % 2 === 0) ? 'block' : 'none';
             switchScreen('turnTransitionScreen');
         }
 
+        function updateTimerDisplay() {
+            document.getElementById('timeLeft').innerText = timeLeft;
+            document.getElementById('timerBox').classList.toggle('danger', timeLeft <= 10);
+        }
+
         function startTurn() {
+            initAudio();
             timeLeft = gameSettings.timer;
             passesLeft = gameSettings.passLimit;
             roundEnded = false;
-            
-            let filteredWords = wordsData;
-            if (gameSettings.difficulty !== 'all') {
-                filteredWords = wordsData.filter(w => gameSettings.difficulty === 'easy' ? w.level === 'easy' : w.level !== 'easy');
-            }
-            currentDeck = [...filteredWords].sort(() => Math.random() - 0.5);
 
-            let teamName = currentTeam === 1 ? gameSettings.team1 : gameSettings.team2;
+            const teamName = currentTeam === 1 ? gameSettings.team1 : gameSettings.team2;
             document.getElementById('turnAnnouncer').innerText = `${teamName} Sırası`;
             document.getElementById('currentScore').innerText = currentTeam === 1 ? scores.team1 : scores.team2;
             document.getElementById('passLeft').innerText = passesLeft;
-            document.getElementById('timeLeft').innerText = timeLeft; 
             document.getElementById('btnPass').disabled = passesLeft <= 0;
+            updateTimerDisplay();
 
             switchScreen('gameScreen');
             loadNewCard();
 
+            // Zamanı saat farkından hesapla: sekme arka plana gidince sayaç kaymaz
+            turnEndAt = Date.now() + gameSettings.timer * 1000;
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 if (roundEnded) return;
-                timeLeft--;
-                document.getElementById('timeLeft').innerText = timeLeft;
-
-                if (timeLeft <= 15 && timeLeft > 0) {
-                    playSound('tick');
-                    triggerVibration(50);
+                const remaining = Math.max(0, Math.ceil((turnEndAt - Date.now()) / 1000));
+                if (remaining !== timeLeft) {
+                    timeLeft = remaining;
+                    updateTimerDisplay();
+                    if (timeLeft <= 15 && timeLeft > 0) {
+                        playSound('tick');
+                        triggerVibration(50);
+                    }
                 }
-
-                if (timeLeft <= 0) {
+                if (remaining <= 0) {
                     clearInterval(timerInterval);
                     endTurn();
                 }
-            }, 1000);
+            }, 250);
         }
 
         function loadNewCard() {
             if (currentDeck.length === 0) {
-                let filteredWords = wordsData;
-                if (gameSettings.difficulty !== 'all') {
-                    filteredWords = wordsData.filter(w => gameSettings.difficulty === 'easy' ? w.level === 'easy' : w.level !== 'easy');
-                }
-                currentDeck = [...filteredWords].sort(() => Math.random() - 0.5);
+                currentDeck = buildDeck();
             }
             currentCard = currentDeck.pop();
-            
+
             document.getElementById('targetWord').innerText = currentCard.word;
             const listEl = document.getElementById('forbiddenList');
             listEl.innerHTML = '';
-            
-            let forbiddenSlice = currentCard.forbidden.slice(0, gameSettings.forbiddenCount);
-            forbiddenSlice.forEach(f => {
+
+            currentCard.forbidden.slice(0, gameSettings.forbiddenCount).forEach(f => {
                 const li = document.createElement('li');
                 li.innerText = f;
                 listEl.appendChild(li);
@@ -904,27 +990,23 @@
                 playSound('tabu');
                 triggerVibration([80, 80, 80]);
             } else if (action === 'pass') {
-                if (passesLeft > 0) {
-                    passesLeft--;
-                    document.getElementById('passLeft').innerText = passesLeft;
-                    if (passesLeft <= 0) {
-                        document.getElementById('btnPass').disabled = true;
-                    }
-                    playSound('pass');
-                    triggerVibration(60);
-                } else {
-                    return;
+                if (passesLeft <= 0) return;
+                passesLeft--;
+                document.getElementById('passLeft').innerText = passesLeft;
+                if (passesLeft <= 0) {
+                    document.getElementById('btnPass').disabled = true;
                 }
+                playSound('pass');
+                triggerVibration(60);
             }
 
-            let currentScoreVal = currentTeam === 1 ? scores.team1 : scores.team2;
+            const currentScoreVal = currentTeam === 1 ? scores.team1 : scores.team2;
             document.getElementById('currentScore').innerText = currentScoreVal;
 
-            // Hedef puana anında ulaşma kontrolü (İstenen özellik: skora ulaşınca da bitsin)
-            if (currentScoreVal >= gameSettings.targetScore) {
-                roundEnded = true;
+            // Hedef puana ulaşan takımın turu biter; rakip takım da eşit turunu oynar
+            if (action === 'correct' && currentScoreVal >= gameSettings.targetScore) {
                 clearInterval(timerInterval);
-                endGame();
+                endTurn();
                 return;
             }
 
@@ -933,12 +1015,18 @@
 
         function endTurn() {
             roundEnded = true;
+            clearInterval(timerInterval);
             roundsPlayed++;
+            playSound('end');
+            triggerVibration([200, 100, 200]);
 
-            // Her iki takım da sürelerini tamamladıysa (eşit hak bittiyse) kontrol et
-            if (roundsPlayed >= 2) {
-                endGame();
-                return;
+            // İki takım da eşit tur oynadıysa bitiş koşulunu kontrol et
+            if (roundsPlayed % 2 === 0) {
+                const maxScore = Math.max(scores.team1, scores.team2);
+                if (maxScore >= gameSettings.targetScore && scores.team1 !== scores.team2) {
+                    endGame();
+                    return;
+                }
             }
 
             currentTeam = currentTeam === 1 ? 2 : 1;
@@ -946,9 +1034,10 @@
         }
 
         function endGame() {
+            roundEnded = true;
             clearInterval(timerInterval);
             let winnerText = "";
-            
+
             if (scores.team1 > scores.team2) {
                 winnerText = `🏆 Kazanan: ${gameSettings.team1}`;
             } else if (scores.team2 > scores.team1) {
@@ -959,7 +1048,15 @@
 
             document.getElementById('winnerTitle').innerText = winnerText;
             document.getElementById('winnerDesc').innerText = "Final Skorları:";
-            document.getElementById('finalScore').innerHTML = `${gameSettings.team1}: <b>${scores.team1} Puan</b><br>${gameSettings.team2}: <b>${scores.team2} Puan</b>`;
+
+            // Takım isimleri kullanıcıdan geldiği için innerHTML yerine textContent kullanılır
+            const finalEl = document.getElementById('finalScore');
+            finalEl.innerHTML = '';
+            [[gameSettings.team1, scores.team1], [gameSettings.team2, scores.team2]].forEach(([name, pts]) => {
+                const row = document.createElement('div');
+                row.textContent = `${name}: ${pts} Puan`;
+                finalEl.appendChild(row);
+            });
             switchScreen('gameOverScreen');
         }
 
