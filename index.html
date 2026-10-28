@@ -1,28 +1,44 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
     <script>
         // Tema ve özel renk paleti (titremeyi önlemek için en başta çalışır)
         (function () {
+            const d = document.documentElement;
             const savedTheme = localStorage.getItem('theme');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (savedTheme === 'light' || (!savedTheme && !systemPrefersDark)) {
-                document.documentElement.classList.add('light-mode');
+            const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isLight = savedTheme === 'light' || (!savedTheme && !systemPrefersDark);
+            if (isLight) d.classList.add('light-mode');
+            const a = localStorage.getItem('custom_accent');
+            const t = localStorage.getItem('custom_text');
+            const b = localStorage.getItem('custom_bg');
+            if (a) d.style.setProperty('--accent-color', a);
+            if (t) d.style.setProperty('--text-color', t);
+            if (b) {
+                d.style.setProperty('--bg-color', b);
+                d.style.setProperty('--card-bg', b);
             }
-            const root = document.documentElement.style;
-            const savedAccent = localStorage.getItem('custom_accent');
-            const savedBg = localStorage.getItem('custom_bg');
-            const savedText = localStorage.getItem('custom_text');
-            if (savedAccent) root.setProperty('--accent-color', savedAccent);
-            if (savedBg) {
-                root.setProperty('--bg-color', savedBg);
-                root.setProperty('--card-bg', savedBg);
+            // Özel arka plan var, yazı rengi seçilmemişse okunabilir renkleri zeminin açıklığına göre seç
+            if (b && !t) {
+                const m = /^#([0-9a-f]{6})$/i.exec(b.trim());
+                if (m) {
+                    const n = parseInt(m[1], 16);
+                    const lin = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+                    const L = 0.2126 * lin(n >> 16) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+                    const bgIsLight = L > 0.18;
+                    d.style.setProperty('--text-color', bgIsLight ? '#0f172a' : '#f8fafc');
+                    d.style.setProperty('--text-muted', bgIsLight ? '#475569' : '#cbd5e1');
+                    d.style.setProperty('--border-color', bgIsLight ? 'rgba(15,23,42,0.18)' : 'rgba(248,250,252,0.22)');
+                }
             }
-            if (savedText) root.setProperty('--text-color', savedText);
+            // Safari üst/alt çubuğu sayfa zemin rengine uysun
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', b || (isLight ? '#f1f5f9' : '#0f172a'));
         })();
     </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dini Tabu - Ayetin Vakti</title>
     <style>
         :root {
@@ -35,6 +51,8 @@
             --success-color: #22c55e;
             --forbidden-color: #f43f5e;
             --drawer-bg: #162032;
+            --text-muted: #94a3b8;
+            color-scheme: dark;
         }
 
         html.light-mode {
@@ -43,6 +61,8 @@
             --text-color: #0f172a;
             --accent-color: #00838f;
             --drawer-bg: #ffffff;
+            --text-muted: #64748b;
+            color-scheme: light;
         }
 
         * {
@@ -185,7 +205,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.8px;
-            color: #94a3b8;
+            color: var(--text-muted);
             padding: 12px 12px 6px 12px;
             margin-top: 4px;
         }
@@ -203,15 +223,17 @@
             transition: background 0.2s;
         }
 
-        .drawer-item:hover {
-            background: rgba(0, 188, 212, 0.08);
+        @media (hover: hover) {
+            .drawer-item:hover {
+                background: color-mix(in srgb, var(--accent-color) 8%, transparent);
+            }
         }
 
         .drawer-icon-box {
             width: 32px;
             height: 32px;
             border-radius: 8px;
-            background: rgba(0, 188, 212, 0.1);
+            background: color-mix(in srgb, var(--accent-color) 10%, transparent);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -289,7 +311,7 @@
             overflow-y: auto;
             font-size: 13px;
             line-height: 1.5;
-            color: #94a3b8;
+            color: var(--text-muted);
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -321,12 +343,12 @@
             align-items: center;
             margin-bottom: 16px;
             font-size: 14px;
-            color: #94a3b8;
+            color: var(--text-muted);
             font-weight: 600;
         }
 
         .timer-box {
-            background: rgba(0, 188, 212, 0.1);
+            background: color-mix(in srgb, var(--accent-color) 10%, transparent);
             color: var(--accent-color);
             padding: 6px 14px;
             border-radius: 20px;
@@ -349,7 +371,7 @@
             display: block;
             font-size: 13px;
             font-weight: 700;
-            color: #94a3b8;
+            color: var(--text-muted);
             margin-bottom: 6px;
         }
 
@@ -470,7 +492,7 @@
         .btn-secondary {
             width: 100%;
             background: transparent;
-            color: #94a3b8;
+            color: var(--text-muted);
             padding: 12px;
             font-size: 14px;
             border-radius: 12px;
@@ -493,7 +515,7 @@
 
         .home-desc {
             font-size: 13px;
-            color: #94a3b8;
+            color: var(--text-muted);
             margin-bottom: 16px;
             line-height: 1.4;
         }
@@ -772,13 +794,23 @@
             themeBtn.innerText = isLight ? '☀️' : '🌙';
         }
 
+        // Safari üst/alt çubuğu sayfa zemin rengine uysun
+        function updateThemeColor() {
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (!meta) return;
+            const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim();
+            if (bg) meta.setAttribute('content', bg);
+        }
+
         function toggleTheme() {
             const isLight = document.documentElement.classList.toggle('light-mode');
             localStorage.setItem('theme', isLight ? 'light' : 'dark');
             updateThemeButton();
+            updateThemeColor();
         }
 
         updateThemeButton();
+        updateThemeColor();
 
         const wordsData = [
             { word: "KÂBE", forbidden: ["Mescid-i Haram", "Mekke", "Kıble", "Hac", "Tavaf"], level: "easy" },
